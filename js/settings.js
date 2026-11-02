@@ -140,8 +140,6 @@ const Settings = (() => {
 
   function showChatView() {
     showView("chat");
-    const input = document.getElementById("message-input");
-    if (input) input.focus();
   }
 
   function showCardFeedback(message, isError) {
