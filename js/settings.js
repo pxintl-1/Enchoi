@@ -3,6 +3,7 @@ const Settings = (() => {
   let feedbackTimer = null;
   let profileFeedbackTimer = null;
   let contactFeedbackTimer = null;
+  let transferFeedbackTimer = null;
   let themeFeedbackTimer = null;
   let bubbleFeedbackTimer = null;
   let customCssFeedbackTimer = null;
@@ -13,7 +14,6 @@ const Settings = (() => {
   let saveCategory = CardDeck.DEFAULT_CATEGORY;
   let editingContactId = null;
 
-  // 进入来源："home" | "contacts" | "chat"
   let cardsOrigin = "home";
   let settingsOrigin = "contacts";
 
@@ -54,6 +54,11 @@ const Settings = (() => {
     els.categoryTabs = document.getElementById("category-tabs");
     els.newCategoryInput = document.getElementById("new-category-input");
     els.addCategoryBtn = document.getElementById("add-category-btn");
+
+    els.exportCardsBtn = document.getElementById("export-cards-btn");
+    els.importCardsBtn = document.getElementById("import-cards-btn");
+    els.importCardsFile = document.getElementById("import-cards-file");
+    els.transferFeedback = document.getElementById("transfer-feedback");
 
     els.inputTaName = document.getElementById("input-ta-name");
     els.inputUserName = document.getElementById("input-user-name");
@@ -192,6 +197,19 @@ const Settings = (() => {
     }
     if (els.cardsOwnerSelect) {
       els.cardsOwnerSelect.addEventListener("change", onCardsOwnerChange);
+    }
+
+    if (els.exportCardsBtn) {
+      els.exportCardsBtn.addEventListener("click", exportCards);
+    }
+    if (els.importCardsBtn) {
+      els.importCardsBtn.addEventListener("click", () => {
+        els.importCardsFile.value = "";
+        els.importCardsFile.click();
+      });
+    }
+    if (els.importCardsFile) {
+      els.importCardsFile.addEventListener("change", onImportFilePicked);
     }
 
     if (els.themeToggle) {
@@ -421,6 +439,17 @@ const Settings = (() => {
     }, 2600);
   }
 
+  function showTransferFeedback(message, isError) {
+    if (!els.transferFeedback) return;
+    els.transferFeedback.textContent = message;
+    els.transferFeedback.classList.toggle("is-error", Boolean(isError));
+    if (transferFeedbackTimer) clearTimeout(transferFeedbackTimer);
+    transferFeedbackTimer = window.setTimeout(() => {
+      els.transferFeedback.textContent = "";
+      els.transferFeedback.classList.remove("is-error");
+    }, 3200);
+  }
+
   function refreshCardsView() {
     if (!editingContactId || !Contacts.get(editingContactId)) {
       editingContactId = Contacts.getActiveId();
@@ -438,6 +467,147 @@ const Settings = (() => {
     if (els.customCssInput) {
       els.customCssInput.value = CustomCssStore.get();
     }
+  }
+
+  function exportCards() {
+    const cards = CardDeck.getAll();
+    const contact = editingContact();
+
+    if (cards.length === 0) {
+      showTransferFeedback("当前好友字卡库是空的，没有可导出的内容。", true);
+      return;
+    }
+
+    const payload = {
+      type: "private-chat-cards",
+      version: 1,
+      contactName: contact.name || "TA",
+      exportedAt: new Date().toISOString(),
+      cards
+    };
+
+    try {
+      const blob = new Blob([JSON.stringify(payload, null, 2)], {
+        type: "application/json;charset=utf-8"
+      });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `cards-${(contact.name || "TA")}-${new Date()
+        .toISOString()
+        .slice(0, 10)}.json`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+      showTransferFeedback(`已导出 ${cards.length} 张字卡。`);
+    } catch (error) {
+      console.warn("导出失败", error);
+      showTransferFeedback("导出失败，请重试。", true);
+    }
+  }
+
+  function parseImportPayload(text) {
+    const raw = String(text || "").trim();
+    if (!raw) return null;
+
+    let parsed;
+    try {
+      parsed = JSON.parse(raw);
+    } catch (error) {
+      return null;
+    }
+
+    if (Array.isArray(parsed)) {
+      return parsed
+        .map((item) => {
+          if (typeof item === "string") {
+            return { category: CardDeck.DEFAULT_CATEGORY, text: item.trim() };
+          }
+          if (item && typeof item === "object") {
+            const text = String(item.text == null ? "" : item.text).trim();
+            if (!text) return null;
+            const category = String(item.category == null ? "" : item.category).trim();
+            return { category: category || CardDeck.DEFAULT_CATEGORY, text };
+          }
+          return null;
+        })
+        .filter(Boolean);
+    }
+
+    if (parsed && Array.isArray(parsed.cards)) {
+      return parsed.cards
+        .map((item) => {
+          if (typeof item === "string") {
+            return { category: CardDeck.DEFAULT_CATEGORY, text: item.trim() };
+          }
+          if (item && typeof item === "object") {
+            const text = String(item.text == null ? "" : item.text).trim();
+            if (!text) return null;
+            const category = String(item.category == null ? "" : item.category).trim();
+            return { category: category || CardDeck.DEFAULT_CATEGORY, text };
+          }
+          return null;
+        })
+        .filter(Boolean);
+    }
+
+    return null;
+  }
+
+  function onImportFilePicked() {
+    const file = els.importCardsFile.files && els.importCardsFile.files[0];
+    if (!file) return;
+
+    if (!/\.json$/i.test(file.name) && file.type !== "application/json") {
+      showTransferFeedback("请选择 JSON 文件。", true);
+      return;
+    }
+
+    const reader = new FileReader();
+
+    reader.onload = () => {
+      const list = parseImportPayload(String(reader.result || ""));
+
+      if (!list || list.length === 0) {
+        showTransferFeedback("文件里没有可导入的字卡。", true);
+        return;
+      }
+
+      const byCategory = new Map();
+      list.forEach((item) => {
+        const cat = item.category || CardDeck.DEFAULT_CATEGORY;
+        if (!byCategory.has(cat)) byCategory.set(cat, []);
+        byCategory.get(cat).push(item.text);
+      });
+
+      let added = 0;
+      let total = 0;
+
+      byCategory.forEach((texts, category) => {
+        const result = CardDeck.importFromArray(texts, category);
+        if (result.ok) {
+          added += result.added;
+          total = result.total;
+        }
+      });
+
+      renderCategorySelect();
+      renderSaveCategorySelect();
+      renderCards();
+
+      const skipped = list.length - added;
+      const parts = [`已导入 ${added} 张字卡`];
+      if (skipped > 0) parts.push(`跳过 ${skipped} 张重复`);
+      parts.push(`当前共 ${total} 张`);
+      showTransferFeedback(parts.join("，") + "。");
+    };
+
+    reader.onerror = () => {
+      showTransferFeedback("读取文件失败，请重试。", true);
+    };
+
+    reader.readAsText(file, "utf-8");
   }
 
   function updateHomeClock() {
