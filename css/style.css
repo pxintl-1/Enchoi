@@ -724,3 +724,108 @@ body.keyboard-open .chat-header,
 body.keyboard-open .page-header {
   padding-top: 6px;
 }
+/* ===== 夜间模式 ===== */
+:root[data-theme="dark"] {
+  --bg: #111111;
+  --panel: #191919;
+  --text: #e9e9e9;
+  --muted: #8c8c8c;
+  --accent: #07c160;
+  --accent-soft: rgba(7, 193, 96, 0.22);
+  --user-bubble: #2f6b3f;
+  --user-text: #f2f2f2;
+  --ta-bubble: #262626;
+  --ta-text: #e9e9e9;
+  --border: #2c2c2c;
+  --danger: #ff6b5e;
+}
+
+:root[data-theme="dark"] body {
+  background: var(--bg);
+}
+
+:root[data-theme="dark"] .app {
+  background: var(--panel);
+}
+
+:root[data-theme="dark"] .chat-header,
+:root[data-theme="dark"] .page-header {
+  background: #1c1c1c;
+}
+
+:root[data-theme="dark"] .message-list {
+  background: var(--bg);
+}
+
+:root[data-theme="dark"] .composer {
+  background: #1c1c1c;
+}
+
+:root[data-theme="dark"] .icon-btn {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text);
+}
+
+:root[data-theme="dark"] .icon-btn:hover {
+  background: rgba(255, 255, 255, 0.14);
+}
+
+:root[data-theme="dark"] .icon-btn:active {
+  background: rgba(255, 255, 255, 0.18);
+}
+
+:root[data-theme="dark"] .composer textarea,
+:root[data-theme="dark"] #new-card-input,
+:root[data-theme="dark"] #input-ta-name,
+:root[data-theme="dark"] #input-user-name,
+:root[data-theme="dark"] #input-ta-call,
+:root[data-theme="dark"] #input-user-call,
+:root[data-theme="dark"] .category-select,
+:root[data-theme="dark"] .inline-input,
+:root[data-theme="dark"] .card-list li,
+:root[data-theme="dark"] .avatar-setting,
+:root[data-theme="dark"] .category-tab,
+:root[data-theme="dark"] .small-btn {
+  background: #242424;
+  color: var(--text);
+  border-color: var(--border);
+}
+
+:root[data-theme="dark"] .category-tab.is-active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #ffffff;
+}
+
+:root[data-theme="dark"] .small-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+:root[data-theme="dark"] .avatar {
+  background-color: #3a3a3a;
+}
+
+:root[data-theme="dark"] .avatar--ta-default {
+  background-color: #4a4a4a;
+}
+
+:root[data-theme="dark"] .avatar--user-default {
+  background-color: #3f3f3f;
+}
+
+:root[data-theme="dark"] .empty-state,
+:root[data-theme="dark"] .hint,
+:root[data-theme="dark"] .time,
+:root[data-theme="dark"] .chat-header__status,
+:root[data-theme="dark"] .page-count {
+  color: var(--muted);
+}
+
+:root[data-theme="dark"] .message--ta .bubble::before {
+  border-right-color: var(--ta-bubble);
+}
+
+:root[data-theme="dark"] .message--user .bubble::after {
+  border-left-color: var(--user-bubble);
+}
