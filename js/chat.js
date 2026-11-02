@@ -5,6 +5,7 @@ const Chat = (() => {
   let els = {};
   let replying = false;
   let replyTimer = null;
+  let cardCategory = CardDeck.ALL_CATEGORY;
 
   function init() {
     els.list = document.getElementById("message-list");
@@ -181,7 +182,7 @@ const Chat = (() => {
         (window.APP_CONFIG.replyDelayMax - window.APP_CONFIG.replyDelayMin);
 
     replyTimer = window.setTimeout(() => {
-      const reply = CardDeck.draw();
+      const reply = CardDeck.draw(cardCategory);
       append("ta", reply);
 
       replying = false;
@@ -210,6 +211,10 @@ const Chat = (() => {
     return [...messages];
   }
 
+  function setCardCategory(category) {
+    cardCategory = category || CardDeck.ALL_CATEGORY;
+  }
+
   function refreshAppearance() {
     applyProfile();
     applyBackground();
@@ -220,6 +225,7 @@ const Chat = (() => {
     init,
     clear,
     getHistory,
+    setCardCategory,
     refreshAvatars: refreshAppearance,
     refreshAppearance
   };
