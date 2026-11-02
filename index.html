@@ -50,29 +50,18 @@
         <select id="card-category-select" class="category-select"></select>
 
         <label class="field-label" for="new-card-input">新增字卡</label>
+        <p class="hint">
+          一行视为一张字卡，可以只写一行，也可以一次粘贴多行批量添加。字卡会保存到当前分类（当前：
+          <strong id="target-category-label">默认</strong>）。
+        </p>
         <textarea
           id="new-card-input"
-          rows="3"
-          placeholder="输入一句话或一小段文字……"
+          rows="4"
+          placeholder="我在呢。&#10;晚安，做个好梦。&#10;今天想我了吗？"
         ></textarea>
         <div class="actions">
           <button id="save-card-btn" class="primary-btn" type="button">保存字卡</button>
           <span id="card-feedback" class="feedback" aria-live="polite"></span>
-        </div>
-
-        <h2 class="section-title">批量添加字卡</h2>
-        <p class="hint">
-          一行视为一张字卡。批量添加的字卡会放进当前选中的分类（当前：
-          <strong id="batch-category-label">默认</strong>）。
-        </p>
-        <textarea
-          id="batch-card-input"
-          rows="5"
-          placeholder="我在呢。&#10;晚安，做个好梦。&#10;今天想我了吗？"
-        ></textarea>
-        <div class="actions">
-          <button id="batch-add-btn" class="primary-btn" type="button">批量添加</button>
-          <span id="batch-feedback" class="feedback" aria-live="polite"></span>
         </div>
 
         <h2 class="section-title">新建分类</h2>
