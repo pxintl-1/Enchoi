@@ -20,10 +20,11 @@ const Settings = (() => {
     els.viewSettings = document.getElementById("view-settings");
 
     els.contactsToHome = document.getElementById("contacts-to-home");
+    els.contactsToSettings = document.getElementById("contacts-to-settings");
     els.cardsToHome = document.getElementById("cards-to-home");
+    els.cardsToContacts = document.getElementById("cards-to-contacts");
     els.settingsToHome = document.getElementById("settings-to-home");
     els.backContacts = document.getElementById("back-contacts");
-    els.cardsToContacts = document.getElementById("cards-to-contacts");
     els.backToChat2 = document.getElementById("back-to-chat-2");
 
     els.appChatDock = document.getElementById("app-chat-dock");
@@ -34,7 +35,6 @@ const Settings = (() => {
     els.contactList = document.getElementById("contact-list");
     els.contactEmpty = document.getElementById("contact-empty");
 
-    els.openCardsBtn = document.getElementById("open-cards-page");
     els.openCardsBtn2 = document.getElementById("open-cards-page-2");
     els.openSettingsBtn = document.getElementById("open-settings-page");
 
@@ -78,36 +78,90 @@ const Settings = (() => {
 
     Home.init();
 
-    els.appChatDock.addEventListener("click", () => Home.show("contacts"));
-    els.contactsToHome.addEventListener("click", () => Home.showHome());
-    els.cardsToHome.addEventListener("click", () => Home.showHome());
-    els.settingsToHome.addEventListener("click", () => Home.showHome());
-    els.backContacts.addEventListener("click", () => Home.show("contacts"));
-    els.cardsToContacts.addEventListener("click", () => Home.show("contacts"));
-    els.backToChat2.addEventListener("click", () => Home.show("chat"));
+    if (els.appChatDock) {
+      els.appChatDock.addEventListener("click", () => Home.show("contacts"));
+    }
+    if (els.contactsToHome) {
+      els.contactsToHome.addEventListener("click", () => Home.showHome());
+    }
+    if (els.contactsToSettings) {
+      els.contactsToSettings.addEventListener("click", () => Home.show("settings"));
+    }
+    if (els.cardsToHome) {
+      els.cardsToHome.addEventListener("click", () => Home.showHome());
+    }
+    if (els.cardsToContacts) {
+      els.cardsToContacts.addEventListener("click", () => Home.show("contacts"));
+    }
+    if (els.settingsToHome) {
+      els.settingsToHome.addEventListener("click", () => Home.showHome());
+    }
+    if (els.backContacts) {
+      els.backContacts.addEventListener("click", () => Home.show("contacts"));
+    }
+    if (els.backToChat2) {
+      els.backToChat2.addEventListener("click", () => Home.show("contacts"));
+    }
 
-    els.openCardsBtn.addEventListener("click", showCardsView);
-    els.openCardsBtn2.addEventListener("click", showCardsView);
-    els.openSettingsBtn.addEventListener("click", showSettingsView);
+    if (els.openCardsBtn2) {
+      els.openCardsBtn2.addEventListener("click", showCardsView);
+    }
+    if (els.openSettingsBtn) {
+      els.openSettingsBtn.addEventListener("click", showSettingsView);
+    }
 
-    els.addContactBtn.addEventListener("click", addContact);
-    els.newContactInput.addEventListener("keydown", (event) => {
-      if (event.key === "Enter") {
-        event.preventDefault();
-        addContact();
-      }
-    });
-    els.contactList.addEventListener("click", onContactListClick);
+    if (els.addContactBtn) {
+      els.addContactBtn.addEventListener("click", addContact);
+    }
+    if (els.newContactInput) {
+      els.newContactInput.addEventListener("keydown", (event) => {
+        if (event.key === "Enter") {
+          event.preventDefault();
+          addContact();
+        }
+      });
+    }
+    if (els.contactList) {
+      els.contactList.addEventListener("click", onContactListClick);
+    }
 
-    els.saveCardBtn.addEventListener("click", saveCards);
-    els.addCategoryBtn.addEventListener("click", addCategory);
-    els.categoryTabs.addEventListener("click", onCategoryTabClick);
-    els.cardList.addEventListener("click", onCardListClick);
-    els.categorySelect.addEventListener("change", onChatCategoryChange);
-    els.saveCategorySelect.addEventListener("change", () => {
-      saveCategory = els.saveCategorySelect.value || CardDeck.DEFAULT_CATEGORY;
-      els.saveCategorySelect.blur();
-    });
+    if (els.saveCardBtn) {
+      els.saveCardBtn.addEventListener("click", saveCards);
+    }
+    if (els.newCardInput) {
+      els.newCardInput.addEventListener("keydown", (event) => {
+        if ((event.ctrlKey || event.metaKey) && event.key === "Enter") {
+          event.preventDefault();
+          saveCards();
+        }
+      });
+    }
+    if (els.addCategoryBtn) {
+      els.addCategoryBtn.addEventListener("click", addCategory);
+    }
+    if (els.newCategoryInput) {
+      els.newCategoryInput.addEventListener("keydown", (event) => {
+        if (event.key === "Enter") {
+          event.preventDefault();
+          addCategory();
+        }
+      });
+    }
+    if (els.categoryTabs) {
+      els.categoryTabs.addEventListener("click", onCategoryTabClick);
+    }
+    if (els.cardList) {
+      els.cardList.addEventListener("click", onCardListClick);
+    }
+    if (els.categorySelect) {
+      els.categorySelect.addEventListener("change", onChatCategoryChange);
+    }
+    if (els.saveCategorySelect) {
+      els.saveCategorySelect.addEventListener("change", () => {
+        saveCategory = els.saveCategorySelect.value || CardDeck.DEFAULT_CATEGORY;
+        els.saveCategorySelect.blur();
+      });
+    }
 
     if (els.themeToggle) {
       els.themeToggle.addEventListener("click", toggleTheme);
@@ -129,14 +183,24 @@ const Settings = (() => {
       els.customCssInput.value = CustomCssStore.get();
     }
 
-    els.saveProfileBtn.addEventListener("click", saveProfile);
-    els.avatarFileInput.addEventListener("change", onAvatarPicked);
-    els.backgroundFileInput.addEventListener("change", onBackgroundPicked);
-    els.pickBackgroundBtn.addEventListener("click", () => {
-      els.backgroundFileInput.value = "";
-      els.backgroundFileInput.click();
-    });
-    els.clearBackgroundBtn.addEventListener("click", clearBackground);
+    if (els.saveProfileBtn) {
+      els.saveProfileBtn.addEventListener("click", saveProfile);
+    }
+    if (els.avatarFileInput) {
+      els.avatarFileInput.addEventListener("change", onAvatarPicked);
+    }
+    if (els.backgroundFileInput) {
+      els.backgroundFileInput.addEventListener("change", onBackgroundPicked);
+    }
+    if (els.pickBackgroundBtn) {
+      els.pickBackgroundBtn.addEventListener("click", () => {
+        els.backgroundFileInput.value = "";
+        els.backgroundFileInput.click();
+      });
+    }
+    if (els.clearBackgroundBtn) {
+      els.clearBackgroundBtn.addEventListener("click", clearBackground);
+    }
 
     document.querySelectorAll("[data-pick-avatar]").forEach((button) => {
       button.addEventListener("click", () => {
@@ -231,7 +295,7 @@ const Settings = (() => {
       const id = removeBtn.dataset.contactRemove;
       const contact = Contacts.get(id);
       if (!contact) return;
-      if (!window.confirm(`确定删除联系人「${contact.name}」吗？\n聊天记录和字卡不会被删除，但会从列表移除。`)) return;
+      if (!window.confirm(`确定删除好友「${contact.name}」吗？\n聊天记录和字卡不会被删除，但会从列表移除。`)) return;
 
       const result = Contacts.remove(id);
       if (!result.ok) {
@@ -245,7 +309,7 @@ const Settings = (() => {
       }
 
       renderContacts();
-      showContactFeedback("联系人已删除。");
+      showContactFeedback("好友已删除。");
     }
   }
 
@@ -261,7 +325,7 @@ const Settings = (() => {
     els.newContactInput.value = "";
     switchContact(result.contact.id);
     renderContacts();
-    showContactFeedback(`已添加联系人「${result.contact.name}」。`);
+    showContactFeedback(`已添加好友「${result.contact.name}」。`);
   }
 
   function showContactFeedback(message, isError) {
@@ -657,7 +721,7 @@ const Settings = (() => {
     if (els.inputTaName) els.inputTaName.value = contact.name || "";
     if (els.inputUserName) els.inputUserName.value = profile.userName || "";
     if (els.inputTaCall) els.inputTaCall.value = contact.taCall || "";
-    if (els.inputUserCall) els.inputUserCall.value = contact.userCall || "";
+    if (els.inputUserCall) els.inputUserCall.value = profile.userCall || "";
   }
 
   function saveProfile() {
@@ -751,7 +815,7 @@ const Settings = (() => {
         renderAvatarSettings();
         renderContacts();
         Chat.refreshAppearance();
-        showProfileFeedback(role === "ta" ? "联系人头像已更新。" : "你的头像已更新。");
+        showProfileFeedback(role === "ta" ? "好友头像已更新。" : "你的头像已更新。");
       },
       (message) => showProfileFeedback(message, true)
     );
