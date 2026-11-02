@@ -1,11 +1,10 @@
 const Chat = (() => {
-  let messages = Storage.getHistory();
-  if (!Array.isArray(messages)) messages = [];
-
+  let messages = [];
   let els = {};
   let replying = false;
   let replyTimer = null;
   let cardCategory = CardDeck.ALL_CATEGORY;
+  let contactId = "default";
 
   function init() {
     els.list = document.getElementById("message-list");
@@ -25,9 +24,15 @@ const Chat = (() => {
     });
 
     els.input.addEventListener("input", resizeInput);
+  }
 
-    applyProfile();
-    applyBackground();
+  function setContact(id) {
+    contactId = id || "default";
+    messages = Storage.getHistory(contactId);
+    if (!Array.isArray(messages)) messages = [];
+    cardCategory = CardDeck.ALL_CATEGORY;
+    CardDeck.loadFor(contactId);
+    renderHeader();
     render();
     updateStatus();
   }
@@ -55,22 +60,30 @@ const Chat = (() => {
     return dataUrl ? `style="background-image:url('${dataUrl}')"` : "";
   }
 
+  function contact() {
+    return Contacts.get(contactId) || { name: "TA", avatar: "" };
+  }
+
   function profileName(role) {
     const profile = ProfileStore.get();
-
     if (role === "user") {
       return profile.userName || window.APP_CONFIG.userName || "我";
     }
-
-    return profile.taName || window.APP_CONFIG.taName || "TA";
+    return contact().name || window.APP_CONFIG.taName || "TA";
   }
 
   function avatarInitial(role) {
     return profileName(role).slice(0, 1);
   }
 
+  function avatarFor(role) {
+    if (role === "user") return AvatarStore.get("user");
+    const c = contact();
+    return c.avatar || "";
+  }
+
   function renderAvatarHtml(role, sizeClass) {
-    const dataUrl = AvatarStore.get(role);
+    const dataUrl = avatarFor(role);
     const initial = avatarInitial(role);
     const defaultClass = role === "user" ? "avatar--user-default" : "avatar--ta-default";
     const content = dataUrl ? "" : escapeHtml(initial);
@@ -78,39 +91,35 @@ const Chat = (() => {
     return `<div class="avatar ${sizeClass} ${dataUrl ? "" : defaultClass}" ${avatarStyle(dataUrl)} aria-hidden="true">${content}</div>`;
   }
 
-  function renderHeaderAvatar() {
-    if (!els.headerTaAvatar) return;
-    const dataUrl = AvatarStore.get("ta");
-    els.headerTaAvatar.classList.toggle("avatar--ta-default", !dataUrl);
-    els.headerTaAvatar.style.backgroundImage = dataUrl ? `url('${dataUrl}')` : "";
-    els.headerTaAvatar.textContent = dataUrl ? "" : avatarInitial("ta");
-  }
-
-  function applyProfile() {
-    const profile = ProfileStore.get();
+  function renderHeader() {
+    const c = contact();
 
     if (els.taName) {
-      els.taName.textContent = profile.taName || "TA";
+      els.taName.textContent = c.name || "TA";
+    }
+
+    if (els.headerTaAvatar) {
+      const dataUrl = c.avatar || "";
+      els.headerTaAvatar.classList.toggle("avatar--ta-default", !dataUrl);
+      els.headerTaAvatar.style.backgroundImage = dataUrl ? `url('${dataUrl}')` : "";
+      els.headerTaAvatar.textContent = dataUrl ? "" : (c.name || "TA").slice(0, 1);
     }
 
     document.title = window.APP_CONFIG.siteTitle;
-    renderHeaderAvatar();
   }
 
   function applyBackground() {
     const profile = ProfileStore.get();
-    const list = els.list;
-
-    if (!list) return;
+    if (!els.list) return;
 
     if (profile.chatBackground) {
-      list.style.backgroundImage = `url('${profile.chatBackground}')`;
-      list.style.backgroundSize = "cover";
-      list.style.backgroundPosition = "center";
-      list.classList.add("message-list--custom-bg");
+      els.list.style.backgroundImage = `url('${profile.chatBackground}')`;
+      els.list.style.backgroundSize = "cover";
+      els.list.style.backgroundPosition = "center";
+      els.list.classList.add("message-list--custom-bg");
     } else {
-      list.style.backgroundImage = "";
-      list.classList.remove("message-list--custom-bg");
+      els.list.style.backgroundImage = "";
+      els.list.classList.remove("message-list--custom-bg");
     }
   }
 
@@ -143,20 +152,16 @@ const Chat = (() => {
   }
 
   function scrollToBottom() {
+    if (!els.list) return;
     requestAnimationFrame(() => {
       els.list.scrollTop = els.list.scrollHeight;
     });
   }
 
   function append(role, text) {
-    messages.push({
-      role,
-      text,
-      time: Date.now()
-    });
-
+    messages.push({ role, text, time: Date.now() });
     messages = messages.slice(-window.APP_CONFIG.maxHistory);
-    Storage.saveHistory(messages);
+    Storage.saveHistory(contactId, messages);
     render();
   }
 
@@ -200,9 +205,9 @@ const Chat = (() => {
     }
 
     replying = false;
-    els.send.disabled = false;
+    if (els.send) els.send.disabled = false;
     messages = [];
-    Storage.clearHistory();
+    Storage.clearHistory(contactId);
     updateStatus();
     render();
   }
@@ -216,17 +221,18 @@ const Chat = (() => {
   }
 
   function refreshAppearance() {
-    applyProfile();
+    renderHeader();
     applyBackground();
     render();
   }
 
   return {
     init,
+    setContact,
     clear,
     getHistory,
     setCardCategory,
-    refreshAvatars: refreshAppearance,
-    refreshAppearance
+    refreshAppearance,
+    refreshAvatars: refreshAppearance
   };
 })();
