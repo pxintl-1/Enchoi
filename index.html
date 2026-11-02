@@ -40,10 +40,30 @@
       </footer>
     </section>
 
+    <!-- 联系人列表 -->
+    <section id="view-contacts" class="view" hidden>
+      <header class="page-header">
+        <button id="contacts-to-home" class="icon-btn" type="button">主屏</button>
+        <h1 class="page-title">聊天</h1>
+        <button id="open-cards-page" class="icon-btn" type="button">字卡</button>
+      </header>
+
+      <main class="page-body">
+        <div class="actions">
+          <input id="new-contact-input" class="inline-input" type="text" maxlength="20" placeholder="新联系人名字">
+          <button id="add-contact-btn" class="small-btn" type="button">添加联系人</button>
+          <span id="contact-feedback" class="feedback" aria-live="polite"></span>
+        </div>
+
+        <ul id="contact-list" class="contact-list"></ul>
+        <p id="contact-empty" class="hint" hidden>还没有联系人，先添加一个。</p>
+      </main>
+    </section>
+
     <!-- 聊天视图 -->
     <section id="view-chat" class="view" hidden>
       <header class="chat-header">
-        <button id="back-home" class="icon-btn" type="button">主屏</button>
+        <button id="back-contacts" class="icon-btn" type="button">联系人</button>
         <div class="chat-header__left">
           <div class="avatar avatar--sm" id="header-ta-avatar" aria-hidden="true"></div>
           <div>
@@ -53,7 +73,7 @@
         </div>
         <div class="chat-header__actions">
           <button id="theme-toggle" class="icon-btn" type="button">夜间</button>
-          <button id="open-cards-page" class="icon-btn" type="button">字卡</button>
+          <button id="open-cards-page-2" class="icon-btn" type="button">字卡</button>
           <button id="open-settings-page" class="icon-btn" type="button">设置</button>
         </div>
       </header>
@@ -69,14 +89,15 @@
     <!-- 字卡视图 -->
     <section id="view-cards" class="view" hidden>
       <header class="page-header">
-        <button id="back-to-chat" class="icon-btn" type="button">返回聊天</button>
-        <h1 class="page-title">TA 的字卡库</h1>
+        <button id="cards-to-contacts" class="icon-btn" type="button">联系人</button>
+        <h1 class="page-title">字卡库</h1>
         <button id="cards-to-home" class="icon-btn" type="button">主屏</button>
       </header>
 
       <main class="page-body">
         <p class="hint">
-          在这里写下你想让 TA 说的话。聊天时，TA 的每条回复都会从字卡里随机抽取。
+          当前联系人：<strong id="cards-contact-name">TA</strong>。
+          字卡、分类、抽取范围都只对当前联系人生效。
         </p>
 
         <label class="field-label" for="card-category-select">聊天抽取范围</label>
@@ -86,9 +107,7 @@
         <select id="save-category-select" class="category-select"></select>
 
         <label class="field-label" for="new-card-input">新增字卡</label>
-        <p class="hint">
-          一行视为一张字卡，可以只写一行，也可以一次粘贴多行批量添加。字卡会保存到上面选中的分类。
-        </p>
+        <p class="hint">一行视为一张字卡，可以只写一行，也可以一次粘贴多行批量添加。</p>
         <textarea
           id="new-card-input"
           rows="4"
@@ -101,22 +120,14 @@
 
         <h2 class="section-title">新建分类</h2>
         <div class="actions">
-          <input
-            id="new-category-input"
-            class="inline-input"
-            type="text"
-            maxlength="20"
-            placeholder="例如：晚安 / 撒娇 / 安慰"
-          >
+          <input id="new-category-input" class="inline-input" type="text" maxlength="20" placeholder="例如：晚安 / 撒娇 / 安慰">
           <button id="add-category-btn" class="small-btn" type="button">新建分类</button>
         </div>
 
         <h2 class="section-title">已保存的字卡</h2>
         <div id="category-tabs" class="category-tabs"></div>
         <ul id="card-list" class="card-list"></ul>
-        <p id="card-empty" class="hint" hidden>
-          当前分类下还没有字卡。
-        </p>
+        <p id="card-empty" class="hint" hidden>当前分类下还没有字卡。</p>
       </main>
     </section>
 
@@ -130,7 +141,7 @@
 
       <main class="page-body">
         <p class="hint">
-          这些信息只保存在当前浏览器，不会上传到任何服务器。换设备或清除浏览器数据后不会自动同步。
+          这些信息只保存在当前浏览器，不会上传到任何服务器。
         </p>
 
         <h2 class="section-title">显示模式</h2>
@@ -140,7 +151,6 @@
         </div>
 
         <h2 class="section-title">气泡样式</h2>
-        <p class="hint">选择后立即生效，并保存在当前浏览器。</p>
         <div class="actions">
           <select id="bubble-style-select" class="category-select">
             <option value="default">微信经典</option>
@@ -153,30 +163,25 @@
 
         <h2 class="section-title">自定义 CSS</h2>
         <p class="hint">
-          粘贴 CSS 后点“应用”，会立即作用到聊天页，并保存在当前浏览器。左侧气泡用
-          <code>.incoming .bubble</code>，右侧气泡用 <code>.outgoing .bubble</code>。
+          左侧气泡用 <code>.incoming .bubble</code>，右侧气泡用 <code>.outgoing .bubble</code>。
         </p>
-        <textarea
-          id="custom-css-input"
-          rows="8"
-          placeholder=".incoming .bubble { ... }&#10;.outgoing .bubble { ... }"
-        ></textarea>
+        <textarea id="custom-css-input" rows="8" placeholder=".incoming .bubble { ... }"></textarea>
         <div class="actions">
           <button id="apply-custom-css-btn" class="primary-btn" type="button">应用</button>
           <button id="clear-custom-css-btn" class="small-btn" type="button">清空</button>
           <span id="custom-css-feedback" class="feedback" aria-live="polite"></span>
         </div>
 
-        <h2 class="section-title">名字与称呼</h2>
-
+        <h2 class="section-title">当前联系人</h2>
         <label class="field-label" for="input-ta-name">TA 的名字</label>
         <input id="input-ta-name" type="text" maxlength="20" placeholder="例如：小满">
 
-        <label class="field-label" for="input-user-name">我的名字</label>
-        <input id="input-user-name" type="text" maxlength="20" placeholder="例如：我">
-
         <label class="field-label" for="input-ta-call">TA 对我的称呼（可选）</label>
         <input id="input-ta-call" type="text" maxlength="20" placeholder="例如：宝贝">
+
+        <h2 class="section-title">我</h2>
+        <label class="field-label" for="input-user-name">我的名字</label>
+        <input id="input-user-name" type="text" maxlength="20" placeholder="例如：我">
 
         <label class="field-label" for="input-user-call">我对 TA 的称呼（可选）</label>
         <input id="input-user-call" type="text" maxlength="20" placeholder="例如：小满">
@@ -190,7 +195,7 @@
         <div class="avatar-settings">
           <div class="avatar-setting">
             <div class="avatar avatar--lg" id="settings-ta-avatar" aria-hidden="true"></div>
-            <div class="avatar-setting__label">TA 的头像</div>
+            <div class="avatar-setting__label">当前联系人头像</div>
             <div class="avatar-setting__actions">
               <button type="button" class="small-btn" data-pick-avatar="ta">更换</button>
               <button type="button" class="small-btn" data-clear-avatar="ta">恢复默认</button>
@@ -207,7 +212,6 @@
         </div>
 
         <h2 class="section-title">聊天背景</h2>
-        <p class="hint">选择一张图片作为聊天背景。图片只保存在当前浏览器，建议 2MB 以内。</p>
         <div class="avatar-setting__actions">
           <button type="button" class="small-btn" id="pick-background-btn">选择背景图</button>
           <button type="button" class="small-btn" id="clear-background-btn">恢复默认背景</button>
@@ -223,6 +227,7 @@
   <script src="js/theme.js"></script>
   <script src="js/bubble.js"></script>
   <script src="js/config.js"></script>
+  <script src="js/contacts.js"></script>
   <script src="js/storage.js"></script>
   <script src="js/avatar.js"></script>
   <script src="js/profile.js"></script>
