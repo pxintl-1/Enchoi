@@ -890,3 +890,34 @@ body.keyboard-open .page-header {
   color: var(--text);
   border-color: var(--border);
 }
+.card-list li {
+  flex-direction: row;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.card-list__main {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  flex: 1;
+}
+
+.card-list__actions {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 0 0 auto;
+}
+
+.small-btn--danger {
+  color: var(--danger);
+  border-color: rgba(230, 67, 64, 0.35);
+}
+
+.small-btn--danger:hover {
+  border-color: var(--danger);
+  color: var(--danger);
+}
