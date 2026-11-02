@@ -175,6 +175,42 @@ const CardDeck = (() => {
     return true;
   }
 
+  function updateAt(index, patch) {
+    if (index < 0 || index >= cards.length) {
+      return { ok: false, msg: "字卡不存在。" };
+    }
+
+    const current = cards[index];
+    const nextText =
+      patch && typeof patch.text === "string"
+        ? normalizeText(patch.text)
+        : current.text;
+    const nextCategory =
+      patch && typeof patch.category === "string"
+        ? ensureCategory(patch.category)
+        : current.category;
+
+    if (!nextText) {
+      return { ok: false, msg: "字卡内容不能为空。" };
+    }
+
+    const duplicated = cards.some(
+      (card, i) =>
+        i !== index &&
+        card.text === nextText &&
+        card.category === nextCategory
+    );
+
+    if (duplicated) {
+      return { ok: false, msg: "这个分类下已经有同一张字卡了。" };
+    }
+
+    cards[index] = { category: nextCategory, text: nextText };
+    persist();
+
+    return { ok: true, category: nextCategory, text: nextText };
+  }
+
   function getAll() {
     return cards.map((card) => ({ ...card }));
   }
@@ -224,6 +260,7 @@ const CardDeck = (() => {
     draw,
     add,
     removeAt,
+    updateAt,
     getAll,
     getByCategory,
     getCategories,
