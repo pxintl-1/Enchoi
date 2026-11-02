@@ -12,6 +12,7 @@ const Settings = (() => {
   let activeCategory = CardDeck.ALL_CATEGORY;
   let chatCategory = CardDeck.ALL_CATEGORY;
   let saveCategory = CardDeck.DEFAULT_CATEGORY;
+  let exportCategory = CardDeck.ALL_CATEGORY;
   let editingContactId = null;
 
   let cardsOrigin = "home";
@@ -46,6 +47,7 @@ const Settings = (() => {
     els.cardsOwnerSelect = document.getElementById("cards-owner-select");
     els.categorySelect = document.getElementById("card-category-select");
     els.saveCategorySelect = document.getElementById("save-category-select");
+    els.exportCategorySelect = document.getElementById("export-category-select");
     els.newCardInput = document.getElementById("new-card-input");
     els.saveCardBtn = document.getElementById("save-card-btn");
     els.cardFeedback = document.getElementById("card-feedback");
@@ -195,6 +197,13 @@ const Settings = (() => {
         els.saveCategorySelect.blur();
       });
     }
+    if (els.exportCategorySelect) {
+      els.exportCategorySelect.addEventListener("change", () => {
+        exportCategory =
+          els.exportCategorySelect.value || CardDeck.ALL_CATEGORY;
+        els.exportCategorySelect.blur();
+      });
+    }
     if (els.cardsOwnerSelect) {
       els.cardsOwnerSelect.addEventListener("change", onCardsOwnerChange);
     }
@@ -282,6 +291,7 @@ const Settings = (() => {
     editingContactId = Contacts.getActiveId();
     CardDeck.loadFor(editingContactId);
     activeCategory = CardDeck.ALL_CATEGORY;
+    exportCategory = CardDeck.ALL_CATEGORY;
     Home.show("cards");
   }
 
@@ -304,11 +314,13 @@ const Settings = (() => {
     activeCategory = CardDeck.ALL_CATEGORY;
     chatCategory = CardDeck.ALL_CATEGORY;
     saveCategory = CardDeck.DEFAULT_CATEGORY;
+    exportCategory = CardDeck.ALL_CATEGORY;
     editingContactId = c.id;
     Chat.setContact(c.id);
     renderContacts();
     renderCategorySelect();
     renderSaveCategorySelect();
+    renderExportCategorySelect();
     renderCards();
   }
 
@@ -321,8 +333,10 @@ const Settings = (() => {
     activeCategory = CardDeck.ALL_CATEGORY;
     chatCategory = CardDeck.ALL_CATEGORY;
     saveCategory = CardDeck.DEFAULT_CATEGORY;
+    exportCategory = CardDeck.ALL_CATEGORY;
     renderCategorySelect();
     renderSaveCategorySelect();
+    renderExportCategorySelect();
     renderCards();
   }
 
@@ -458,6 +472,7 @@ const Settings = (() => {
     renderCardsOwnerSelect();
     renderCategorySelect();
     renderSaveCategorySelect();
+    renderExportCategorySelect();
     renderCards();
   }
 
@@ -469,12 +484,45 @@ const Settings = (() => {
     }
   }
 
+  function renderExportCategorySelect() {
+    if (!els.exportCategorySelect) return;
+
+    const categories = CardDeck.getCategories();
+
+    if (
+      exportCategory !== CardDeck.ALL_CATEGORY &&
+      !categories.includes(exportCategory)
+    ) {
+      exportCategory = CardDeck.ALL_CATEGORY;
+    }
+
+    const options = [
+      `<option value="${CardDeck.ALL_CATEGORY}">全部分类</option>`,
+      ...categories.map(
+        (cat) => `<option value="${escapeAttr(cat)}">${escapeHtml(cat)}</option>`
+      )
+    ];
+
+    els.exportCategorySelect.innerHTML = options.join("");
+    els.exportCategorySelect.value = exportCategory;
+  }
+
   function exportCards() {
-    const cards = CardDeck.getAll();
     const contact = editingContact();
+    const all = CardDeck.getAll();
+    const selected = exportCategory;
+    const cards =
+      selected === CardDeck.ALL_CATEGORY
+        ? all
+        : all.filter((card) => card.category === selected);
 
     if (cards.length === 0) {
-      showTransferFeedback("当前好友字卡库是空的，没有可导出的内容。", true);
+      showTransferFeedback(
+        selected === CardDeck.ALL_CATEGORY
+          ? "当前好友字卡库是空的，没有可导出的内容。"
+          : `分类「${selected}」下没有字卡。`,
+        true
+      );
       return;
     }
 
@@ -482,6 +530,7 @@ const Settings = (() => {
       type: "private-chat-cards",
       version: 1,
       contactName: contact.name || "TA",
+      category: selected === CardDeck.ALL_CATEGORY ? "全部分类" : selected,
       exportedAt: new Date().toISOString(),
       cards
     };
@@ -492,15 +541,21 @@ const Settings = (() => {
       });
       const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
+      const suffix =
+        selected === CardDeck.ALL_CATEGORY ? "all" : selected.replace(/\s+/g, "_");
       link.href = url;
-      link.download = `cards-${(contact.name || "TA")}-${new Date()
+      link.download = `cards-${(contact.name || "TA")}-${suffix}-${new Date()
         .toISOString()
         .slice(0, 10)}.json`;
       document.body.appendChild(link);
       link.click();
       link.remove();
       URL.revokeObjectURL(url);
-      showTransferFeedback(`已导出 ${cards.length} 张字卡。`);
+      showTransferFeedback(
+        `已导出 ${cards.length} 张字卡（${
+          selected === CardDeck.ALL_CATEGORY ? "全部分类" : selected
+        }）。`
+      );
     } catch (error) {
       console.warn("导出失败", error);
       showTransferFeedback("导出失败，请重试。", true);
@@ -518,8 +573,9 @@ const Settings = (() => {
       return null;
     }
 
-    if (Array.isArray(parsed)) {
-      return parsed
+    function normalizeList(list) {
+      if (!Array.isArray(list)) return null;
+      return list
         .map((item) => {
           if (typeof item === "string") {
             return { category: CardDeck.DEFAULT_CATEGORY, text: item.trim() };
@@ -527,7 +583,9 @@ const Settings = (() => {
           if (item && typeof item === "object") {
             const text = String(item.text == null ? "" : item.text).trim();
             if (!text) return null;
-            const category = String(item.category == null ? "" : item.category).trim();
+            const category = String(
+              item.category == null ? "" : item.category
+            ).trim();
             return { category: category || CardDeck.DEFAULT_CATEGORY, text };
           }
           return null;
@@ -535,21 +593,12 @@ const Settings = (() => {
         .filter(Boolean);
     }
 
+    if (Array.isArray(parsed)) {
+      return normalizeList(parsed);
+    }
+
     if (parsed && Array.isArray(parsed.cards)) {
-      return parsed.cards
-        .map((item) => {
-          if (typeof item === "string") {
-            return { category: CardDeck.DEFAULT_CATEGORY, text: item.trim() };
-          }
-          if (item && typeof item === "object") {
-            const text = String(item.text == null ? "" : item.text).trim();
-            if (!text) return null;
-            const category = String(item.category == null ? "" : item.category).trim();
-            return { category: category || CardDeck.DEFAULT_CATEGORY, text };
-          }
-          return null;
-        })
-        .filter(Boolean);
+      return normalizeList(parsed.cards);
     }
 
     return null;
@@ -594,6 +643,7 @@ const Settings = (() => {
 
       renderCategorySelect();
       renderSaveCategorySelect();
+      renderExportCategorySelect();
       renderCards();
 
       const skipped = list.length - added;
@@ -875,6 +925,7 @@ const Settings = (() => {
 
     renderCategorySelect();
     renderSaveCategorySelect();
+    renderExportCategorySelect();
     renderCards();
     showCardFeedback(`已更新为「${result.category}」下的字卡。`);
   }
@@ -892,6 +943,7 @@ const Settings = (() => {
     }
     renderCategorySelect();
     renderSaveCategorySelect();
+    renderExportCategorySelect();
     renderCards();
     showCardFeedback("字卡已删除。");
   }
@@ -921,6 +973,7 @@ const Settings = (() => {
     els.newCardInput.value = "";
     renderCategorySelect();
     renderSaveCategorySelect();
+    renderExportCategorySelect();
     renderCards();
 
     const skipped = lines.length - result.added;
@@ -958,6 +1011,7 @@ const Settings = (() => {
     els.newCategoryInput.value = "";
     renderCategorySelect();
     renderSaveCategorySelect();
+    renderExportCategorySelect();
     renderCards();
     showCardFeedback(`已创建分类「${result.category}」。`);
   }
