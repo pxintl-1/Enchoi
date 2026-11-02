@@ -921,3 +921,125 @@ body.keyboard-open .page-header {
   border-color: var(--danger);
   color: var(--danger);
 }
+/* ===== 手机主屏 ===== */
+#view-home {
+  background:
+    radial-gradient(circle at 20% 15%, rgba(255, 255, 255, 0.55), transparent 45%),
+    radial-gradient(circle at 80% 80%, rgba(255, 255, 255, 0.35), transparent 45%),
+    linear-gradient(160deg, #3a4a6b, #1e2637 55%, #121722);
+  color: #fff;
+}
+
+.home-header {
+  flex: 0 0 auto;
+  padding: calc(18px + var(--safe-top)) 20px 8px;
+  text-align: center;
+}
+
+.home-time {
+  font-size: 34px;
+  font-weight: 300;
+  letter-spacing: 0.02em;
+  line-height: 1.1;
+}
+
+.home-date {
+  margin-top: 4px;
+  font-size: 13px;
+  opacity: 0.75;
+}
+
+.home-grid {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-content: start;
+  gap: 22px 18px;
+  padding: 18px 20px;
+  overflow-y: auto;
+}
+
+.home-dock {
+  flex: 0 0 auto;
+  display: flex;
+  justify-content: center;
+  padding: 12px 20px calc(16px + var(--safe-bottom));
+}
+
+.app-icon {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  padding: 0;
+  min-height: auto;
+}
+
+.app-icon__glyph {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+  border-radius: 18px;
+  font-size: 30px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.22);
+  background: rgba(255, 255, 255, 0.18);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+.app-icon__glyph--chat {
+  background: linear-gradient(160deg, #6ee7a8, #07c160);
+}
+
+.app-icon__glyph--cards {
+  background: linear-gradient(160deg, #ffd28a, #ff9f43);
+}
+
+.app-icon__glyph--settings {
+  background: linear-gradient(160deg, #b8c2d6, #7d8aa3);
+}
+
+.app-icon__label {
+  font-size: 12px;
+  opacity: 0.92;
+}
+
+.app-icon:active .app-icon__glyph {
+  transform: scale(0.94);
+  transition: transform 0.08s ease;
+}
+
+.app-icon--dock .app-icon__glyph {
+  width: 58px;
+  height: 58px;
+  border-radius: 16px;
+}
+
+:root[data-theme="dark"] #view-home {
+  background:
+    radial-gradient(circle at 20% 15%, rgba(255, 255, 255, 0.12), transparent 45%),
+    linear-gradient(160deg, #1c2333, #0d1119 60%, #05070b);
+}
+
+:root[data-theme="dark"] .app-icon__glyph {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+@media (max-width: 360px) {
+  .app-icon__glyph {
+    width: 56px;
+    height: 56px;
+    border-radius: 16px;
+    font-size: 26px;
+  }
+
+  .home-grid {
+    gap: 18px 14px;
+    padding: 14px 16px;
+  }
+}
