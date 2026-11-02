@@ -50,10 +50,12 @@
         <label class="field-label" for="card-category-select">聊天抽取范围</label>
         <select id="card-category-select" class="category-select"></select>
 
+        <label class="field-label" for="save-category-select">保存到分类</label>
+        <select id="save-category-select" class="category-select"></select>
+
         <label class="field-label" for="new-card-input">新增字卡</label>
         <p class="hint">
-          一行视为一张字卡，可以只写一行，也可以一次粘贴多行批量添加。字卡会保存到当前分类（当前：
-          <strong id="target-category-label">默认</strong>）。
+          一行视为一张字卡，可以只写一行，也可以一次粘贴多行批量添加。字卡会保存到上面选中的分类。
         </p>
         <textarea
           id="new-card-input"
