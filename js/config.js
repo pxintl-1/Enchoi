@@ -2,6 +2,8 @@ window.APP_CONFIG = {
   siteTitle: "只对你可见",
   taName: "TA",
   userName: "我",
+  taCall: "",
+  userCall: "",
   maxHistory: 300,
   replyDelayMin: 400,
   replyDelayMax: 1100,
