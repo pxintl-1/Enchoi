@@ -11,6 +11,12 @@
   --ta-text: #191919;
   --border: #e5e5e5;
   --danger: #e64340;
+
+  --header-h: 52px;
+  --composer-min-h: 58px;
+  --app-max-w: 720px;
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-top: env(safe-area-inset-top, 0px);
 }
 
 * {
@@ -22,30 +28,52 @@ body {
   height: 100%;
 }
 
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
 body {
   margin: 0;
+  overflow-x: hidden;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
     "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
   color: var(--text);
   background: var(--bg);
+  -webkit-tap-highlight-color: transparent;
 }
 
 button,
 input,
 textarea {
   font: inherit;
+  color: inherit;
 }
 
 button {
   cursor: pointer;
+  touch-action: manipulation;
+}
+
+textarea {
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+img {
+  max-width: 100%;
 }
 
 .app {
-  width: min(100%, 720px);
+  width: 100%;
+  max-width: var(--app-max-w);
+  height: 100vh;
   height: 100dvh;
   margin: 0 auto;
   display: flex;
   flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
   background: var(--panel);
 }
 
@@ -54,7 +82,6 @@ button {
     margin: 20px auto;
     height: calc(100dvh - 40px);
     border-radius: 12px;
-    overflow: hidden;
     box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
   }
 }
@@ -64,6 +91,7 @@ button {
   flex-direction: column;
   flex: 1;
   min-height: 0;
+  min-width: 0;
 }
 
 .view[hidden] {
@@ -72,11 +100,13 @@ button {
 
 /* ===== 顶栏 ===== */
 .chat-header {
+  flex: 0 0 auto;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 10px;
-  padding: 10px 14px;
+  gap: 8px;
+  min-height: var(--header-h);
+  padding: calc(8px + var(--safe-top)) 12px 8px;
   border-bottom: 1px solid var(--border);
   background: #ededed;
 }
@@ -86,31 +116,55 @@ button {
   align-items: center;
   gap: 10px;
   min-width: 0;
+  flex: 1;
+}
+
+.chat-header__left > div:last-child {
+  min-width: 0;
 }
 
 .chat-header__name {
   font-weight: 600;
   font-size: 16px;
   line-height: 1.2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .chat-header__status {
   margin-top: 2px;
   font-size: 12px;
   color: var(--muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.chat-header__actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 0 0 auto;
 }
 
 .icon-btn {
+  min-height: 36px;
   padding: 7px 12px;
   border: 0;
   border-radius: 6px;
   background: rgba(0, 0, 0, 0.05);
   color: var(--text);
   font-size: 13px;
+  white-space: nowrap;
 }
 
 .icon-btn:hover {
   background: rgba(0, 0, 0, 0.08);
+}
+
+.icon-btn:active {
+  background: rgba(0, 0, 0, 0.12);
 }
 
 /* ===== 头像 ===== */
@@ -128,6 +182,7 @@ button {
   font-weight: 600;
   overflow: hidden;
   user-select: none;
+  -webkit-user-select: none;
 }
 
 .avatar--sm {
@@ -159,12 +214,17 @@ button {
 
 /* ===== 消息区 ===== */
 .message-list {
-  flex: 1;
+  flex: 1 1 auto;
+  min-height: 0;
+  min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  padding: 16px 12px;
+  gap: 14px;
+  padding: 14px 12px;
   overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
   background: var(--bg);
 }
 
@@ -172,6 +232,7 @@ button {
   display: flex;
   align-items: flex-start;
   gap: 8px;
+  width: 100%;
   max-width: 100%;
 }
 
@@ -182,7 +243,8 @@ button {
 .message__body {
   display: flex;
   flex-direction: column;
-  max-width: calc(100% - 100px);
+  min-width: 0;
+  max-width: calc(100% - 56px);
 }
 
 .message--user .message__body {
@@ -191,10 +253,12 @@ button {
 
 .bubble {
   position: relative;
+  max-width: 100%;
   padding: 9px 12px;
   border-radius: 6px;
   line-height: 1.5;
   white-space: pre-wrap;
+  overflow-wrap: anywhere;
   word-break: break-word;
   font-size: 15px;
   text-align: left;
@@ -242,6 +306,7 @@ button {
 
 .empty-state {
   margin: auto;
+  padding: 20px;
   color: var(--muted);
   text-align: center;
   font-size: 13px;
@@ -250,19 +315,21 @@ button {
 
 /* ===== 输入区 ===== */
 .composer {
+  flex: 0 0 auto;
   display: flex;
   align-items: flex-end;
   gap: 8px;
-  padding: 10px 12px calc(10px + env(safe-area-inset-bottom));
+  padding: 8px 10px calc(8px + var(--safe-bottom));
   border-top: 1px solid var(--border);
   background: #f7f7f7;
 }
 
 .composer textarea {
   flex: 1;
-  min-height: 38px;
+  min-width: 0;
+  min-height: 40px;
   max-height: 110px;
-  padding: 9px 12px;
+  padding: 10px 12px;
   border: 0;
   border-radius: 8px;
   outline: none;
@@ -270,7 +337,7 @@ button {
   color: var(--text);
   line-height: 1.4;
   resize: none;
-  font-size: 15px;
+  font-size: 16px; /* 避免 iOS 聚焦时自动放大 */
 }
 
 .composer textarea:focus {
@@ -278,14 +345,16 @@ button {
 }
 
 .send-btn {
-  min-height: 38px;
-  padding: 9px 16px;
+  flex: 0 0 auto;
+  min-height: 40px;
+  padding: 10px 16px;
   border: 0;
   border-radius: 6px;
   background: var(--accent);
   color: #fff;
   font-weight: 600;
   font-size: 14px;
+  white-space: nowrap;
 }
 
 .send-btn:disabled {
@@ -293,22 +362,28 @@ button {
   cursor: not-allowed;
 }
 
-/* ===== 字卡页面 ===== */
+/* ===== 二级页面通用 ===== */
 .page-header {
+  flex: 0 0 auto;
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 10px 14px;
+  gap: 8px;
+  min-height: var(--header-h);
+  padding: calc(8px + var(--safe-top)) 12px 8px;
   border-bottom: 1px solid var(--border);
   background: #ededed;
 }
 
 .page-title {
   flex: 1;
+  min-width: 0;
   margin: 0;
   font-size: 16px;
   font-weight: 600;
   text-align: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .page-count {
@@ -319,8 +394,12 @@ button {
 
 .page-body {
   flex: 1;
-  padding: 16px 14px calc(24px + env(safe-area-inset-bottom));
+  min-height: 0;
+  min-width: 0;
+  padding: 16px 14px calc(24px + var(--safe-bottom));
   overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
   background: var(--panel);
 }
 
@@ -333,22 +412,41 @@ button {
 }
 
 .section-title {
-  margin-top: 26px;
+  margin-top: 24px;
 }
 
-#new-card-input {
+#new-card-input,
+#input-ta-name,
+#input-user-name,
+#input-ta-call,
+#input-user-call {
   width: 100%;
-  padding: 10px 12px;
+  max-width: 100%;
+  padding: 11px 12px;
   border: 1px solid var(--border);
   border-radius: 8px;
   outline: none;
   background: #fff;
-  line-height: 1.55;
-  resize: vertical;
-  font-size: 15px;
+  line-height: 1.5;
+  font-size: 16px; /* 避免 iOS 聚焦放大 */
 }
 
-#new-card-input:focus {
+#new-card-input {
+  resize: vertical;
+}
+
+#input-ta-name,
+#input-user-name,
+#input-ta-call,
+#input-user-call {
+  margin-bottom: 14px;
+}
+
+#new-card-input:focus,
+#input-ta-name:focus,
+#input-user-name:focus,
+#input-ta-call:focus,
+#input-user-call:focus {
   border-color: var(--accent);
   box-shadow: 0 0 0 3px var(--accent-soft);
 }
@@ -357,21 +455,26 @@ button {
   display: flex;
   align-items: center;
   gap: 12px;
+  flex-wrap: wrap;
   margin-top: 10px;
 }
 
 .primary-btn {
+  min-height: 40px;
   padding: 9px 18px;
   border: 0;
   border-radius: 6px;
   background: var(--accent);
   color: #fff;
   font-weight: 600;
+  white-space: nowrap;
 }
 
 .feedback {
   font-size: 12px;
   color: var(--accent);
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 .feedback.is-error {
@@ -395,6 +498,7 @@ button {
   font-size: 14px;
   line-height: 1.55;
   white-space: pre-wrap;
+  overflow-wrap: anywhere;
   word-break: break-word;
 }
 
@@ -403,12 +507,13 @@ button {
   color: var(--muted);
   font-size: 12px;
   line-height: 1.7;
+  overflow-wrap: anywhere;
 }
 
 /* ===== 头像设置 ===== */
 .avatar-settings {
   display: flex;
-  gap: 18px;
+  gap: 14px;
   flex-wrap: wrap;
 }
 
@@ -421,7 +526,9 @@ button {
   border: 1px solid var(--border);
   border-radius: 10px;
   background: #fff;
-  min-width: 150px;
+  min-width: 0;
+  flex: 1 1 140px;
+  max-width: 100%;
 }
 
 .avatar-setting__label {
@@ -432,99 +539,101 @@ button {
 .avatar-setting__actions {
   display: flex;
   gap: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
 }
 
 .small-btn {
-  padding: 6px 10px;
+  min-height: 36px;
+  padding: 7px 10px;
   border: 1px solid var(--border);
   border-radius: 6px;
   background: #fff;
   color: var(--text);
   font-size: 12px;
+  white-space: nowrap;
 }
-.chat-header__actions {
-  display: flex;
-  align-items: center;
-  gap: 6px;
+
+.small-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
 }
 
 .message-list--custom-bg .bubble {
   backdrop-filter: blur(0.5px);
 }
 
-#input-ta-name,
-#input-user-name,
-#input-ta-call,
-#input-user-call {
-  width: 100%;
-  margin-bottom: 14px;
-  padding: 10px 12px;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  outline: none;
-  background: #fff;
-  font-size: 15px;
+/* ===== 小屏手机细化 ===== */
+@media (max-width: 360px) {
+  .chat-header {
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+
+  .chat-header__actions {
+    gap: 4px;
+  }
+
+  .icon-btn {
+    padding: 7px 9px;
+    font-size: 12px;
+  }
+
+  .avatar--md {
+    width: 36px;
+    height: 36px;
+    font-size: 14px;
+  }
+
+  .message__body {
+    max-width: calc(100% - 48px);
+  }
+
+  .bubble {
+    font-size: 14px;
+    padding: 8px 10px;
+  }
+
+  .composer {
+    gap: 6px;
+    padding-left: 8px;
+    padding-right: 8px;
+  }
+
+  .send-btn {
+    padding: 10px 12px;
+  }
 }
 
-#input-ta-name:focus,
-#input-user-name:focus,
-#input-ta-call:focus,
-#input-user-call:focus {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 3px var(--accent-soft);
+/* ===== 横屏矮屏时压缩高度 ===== */
+@media (max-height: 500px) and (orientation: landscape) {
+  :root {
+    --header-h: 44px;
+  }
+
+  .avatar--md {
+    width: 32px;
+    height: 32px;
+    font-size: 13px;
+  }
+
+  .message-list {
+    gap: 10px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+  }
+
+  .composer textarea {
+    max-height: 64px;
+  }
 }
 
-.avatar-settings {
-  display: flex;
-  gap: 18px;
-  flex-wrap: wrap;
+/* ===== 键盘弹起时锁定视口 ===== */
+body.keyboard-open .app {
+  height: var(--app-visual-height, 100dvh);
 }
 
-.avatar-setting {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  padding: 14px;
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  background: #fff;
-  min-width: 150px;
-}
-
-.avatar-setting__label {
-  font-size: 13px;
-  color: var(--muted);
-}
-
-.avatar-setting__actions {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-
-.small-btn {
-  padding: 6px 10px;
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  background: #fff;
-  color: var(--text);
-  font-size: 12px;
-}
-
-.small-btn:hover {
-  border-color: var(--accent);
-  color: var(--accent);
-}
-
-.avatar--lg {
-  width: 64px;
-  height: 64px;
-  font-size: 22px;
-  border-radius: 10px;
-}
-
-.small-btn:hover {
-  border-color: var(--accent);
-  color: var(--accent);
+body.keyboard-open .chat-header,
+body.keyboard-open .page-header {
+  padding-top: 6px;
 }
