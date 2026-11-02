@@ -13,6 +13,10 @@ const Settings = (() => {
   let saveCategory = CardDeck.DEFAULT_CATEGORY;
   let editingContactId = null;
 
+  // 记录进入字卡页 / 设置页的来源："chat" 或 "contacts"
+  let cardsOrigin = "contacts";
+  let settingsOrigin = "contacts";
+
   function init() {
     els.viewHome = document.getElementById("view-home");
     els.viewContacts = document.getElementById("view-contacts");
@@ -22,8 +26,8 @@ const Settings = (() => {
 
     els.contactsToHome = document.getElementById("contacts-to-home");
     els.contactsToSettings = document.getElementById("contacts-to-settings");
+    els.cardsBack = document.getElementById("cards-back");
     els.cardsToHome = document.getElementById("cards-to-home");
-    els.cardsToContacts = document.getElementById("cards-to-contacts");
     els.settingsToHome = document.getElementById("settings-to-home");
     els.backContacts = document.getElementById("back-contacts");
     els.backToChat2 = document.getElementById("back-to-chat-2");
@@ -87,13 +91,18 @@ const Settings = (() => {
       els.contactsToHome.addEventListener("click", () => Home.showHome());
     }
     if (els.contactsToSettings) {
-      els.contactsToSettings.addEventListener("click", () => Home.show("settings"));
+      els.contactsToSettings.addEventListener("click", () => {
+        settingsOrigin = "contacts";
+        Home.show("settings");
+      });
+    }
+    if (els.cardsBack) {
+      els.cardsBack.addEventListener("click", () => {
+        Home.show(cardsOrigin === "chat" ? "chat" : "contacts");
+      });
     }
     if (els.cardsToHome) {
       els.cardsToHome.addEventListener("click", () => Home.showHome());
-    }
-    if (els.cardsToContacts) {
-      els.cardsToContacts.addEventListener("click", () => Home.show("contacts"));
     }
     if (els.settingsToHome) {
       els.settingsToHome.addEventListener("click", () => Home.showHome());
@@ -102,14 +111,23 @@ const Settings = (() => {
       els.backContacts.addEventListener("click", () => Home.show("contacts"));
     }
     if (els.backToChat2) {
-      els.backToChat2.addEventListener("click", () => Home.show("contacts"));
+      els.backToChat2.addEventListener("click", () => {
+        Home.show(settingsOrigin === "chat" ? "chat" : "contacts");
+      });
     }
 
     if (els.openCardsBtn2) {
-      els.openCardsBtn2.addEventListener("click", showCardsView);
+      els.openCardsBtn2.addEventListener("click", () => {
+        cardsOrigin = "chat";
+        openCardsView();
+      });
     }
+
     if (els.openSettingsBtn) {
-      els.openSettingsBtn.addEventListener("click", showSettingsView);
+      els.openSettingsBtn.addEventListener("click", () => {
+        settingsOrigin = "chat";
+        Home.show("settings");
+      });
     }
 
     if (els.addContactBtn) {
@@ -232,6 +250,13 @@ const Settings = (() => {
     updateThemeButton();
     renderContacts();
     updateHomeClock();
+  }
+
+  function openCardsView() {
+    editingContactId = Contacts.getActiveId();
+    CardDeck.loadFor(editingContactId);
+    activeCategory = CardDeck.ALL_CATEGORY;
+    Home.show("cards");
   }
 
   function currentContact() {
@@ -392,13 +417,6 @@ const Settings = (() => {
     }, 2600);
   }
 
-  function showCardsView() {
-    editingContactId = Contacts.getActiveId();
-    CardDeck.loadFor(editingContactId);
-    activeCategory = CardDeck.ALL_CATEGORY;
-    Home.show("cards");
-  }
-
   function refreshCardsView() {
     if (!editingContactId || !Contacts.get(editingContactId)) {
       editingContactId = Contacts.getActiveId();
@@ -408,10 +426,6 @@ const Settings = (() => {
     renderCategorySelect();
     renderSaveCategorySelect();
     renderCards();
-  }
-
-  function showSettingsView() {
-    Home.show("settings");
   }
 
   function refreshSettingsView() {
