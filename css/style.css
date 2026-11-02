@@ -632,7 +632,86 @@ img {
 body.keyboard-open .app {
   height: var(--app-visual-height, 100dvh);
 }
+.category-select,
+.inline-input {
+  width: 100%;
+  max-width: 100%;
+  min-height: 40px;
+  padding: 9px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  outline: none;
+  background: #fff;
+  font-size: 16px;
+}
 
+.category-select:focus,
+.inline-input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+.inline-input {
+  flex: 1 1 160px;
+  min-width: 0;
+}
+
+.category-tabs {
+  display: flex;
+  gap: 8px;
+  margin: 8px 0 12px;
+  padding-bottom: 4px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.category-tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.category-tab {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 34px;
+  padding: 6px 12px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--text);
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.category-tab.is-active {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: #fff;
+}
+
+.category-tab__count {
+  font-size: 11px;
+  opacity: 0.75;
+}
+
+.card-list li {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.card-list__category {
+  font-size: 11px;
+  color: var(--accent);
+}
+
+.card-list__text {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
 body.keyboard-open .chat-header,
 body.keyboard-open .page-header {
   padding-top: 6px;
