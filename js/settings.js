@@ -13,7 +13,6 @@ const Settings = (() => {
   let saveCategory = CardDeck.DEFAULT_CATEGORY;
   let editingContactId = null;
 
-  // 记录进入字卡页 / 设置页的来源："chat" 或 "contacts"
   let cardsOrigin = "contacts";
   let settingsOrigin = "contacts";
 
@@ -44,7 +43,6 @@ const Settings = (() => {
     els.openSettingsBtn = document.getElementById("open-settings-page");
 
     els.cardsOwnerSelect = document.getElementById("cards-owner-select");
-    els.cardsContactName = document.getElementById("cards-contact-name");
     els.categorySelect = document.getElementById("card-category-select");
     els.saveCategorySelect = document.getElementById("save-category-select");
     els.newCardInput = document.getElementById("new-card-input");
@@ -122,7 +120,6 @@ const Settings = (() => {
         openCardsView();
       });
     }
-
     if (els.openSettingsBtn) {
       els.openSettingsBtn.addEventListener("click", () => {
         settingsOrigin = "chat";
@@ -315,10 +312,6 @@ const Settings = (() => {
 
     els.cardsOwnerSelect.value = target.id;
     editingContactId = target.id;
-
-    if (els.cardsContactName) {
-      els.cardsContactName.textContent = target.name || "TA";
-    }
   }
 
   function renderContacts() {
@@ -369,7 +362,7 @@ const Settings = (() => {
       const id = removeBtn.dataset.contactRemove;
       const contact = Contacts.get(id);
       if (!contact) return;
-      if (!window.confirm(`确定删除好友「${contact.name}」吗？\n聊天记录和字卡不会被删除，但会从列表移除。`)) return;
+      if (!window.confirm(`确定删除好友「${contact.name}」吗？`)) return;
 
       const result = Contacts.remove(id);
       if (!result.ok) {
