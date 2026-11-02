@@ -19,7 +19,10 @@
             <div class="chat-header__status" id="typing-status" aria-live="polite">在线</div>
           </div>
         </div>
-        <button id="open-cards-page" class="icon-btn" type="button">管理字卡</button>
+        <div class="chat-header__actions">
+          <button id="open-cards-page" class="icon-btn" type="button">字卡</button>
+          <button id="open-settings-page" class="icon-btn" type="button">设置</button>
+        </div>
       </header>
 
       <main id="message-list" class="message-list" aria-live="polite"></main>
@@ -59,9 +62,42 @@
         <p id="card-empty" class="hint" hidden>
           还没有字卡。先在上方保存一张，再回聊天页试试。
         </p>
+      </main>
+    </section>
 
-        <h2 class="section-title">头像设置</h2>
-        <p class="hint">头像只保存在当前浏览器，不会上传到任何服务器。</p>
+    <!-- 设置视图 -->
+    <section id="view-settings" class="view" hidden>
+      <header class="page-header">
+        <button id="back-to-chat-2" class="icon-btn" type="button">返回聊天</button>
+        <h1 class="page-title">设置</h1>
+        <span class="page-count"></span>
+      </header>
+
+      <main class="page-body">
+        <p class="hint">
+          这些信息只保存在当前浏览器，不会上传到任何服务器。换设备或清除浏览器数据后不会自动同步。
+        </p>
+
+        <h2 class="section-title">名字与称呼</h2>
+
+        <label class="field-label" for="input-ta-name">TA 的名字</label>
+        <input id="input-ta-name" type="text" maxlength="20" placeholder="例如：小满">
+
+        <label class="field-label" for="input-user-name">我的名字</label>
+        <input id="input-user-name" type="text" maxlength="20" placeholder="例如：我">
+
+        <label class="field-label" for="input-ta-call">TA 对我的称呼（可选）</label>
+        <input id="input-ta-call" type="text" maxlength="20" placeholder="例如：宝贝">
+
+        <label class="field-label" for="input-user-call">我对 TA 的称呼（可选）</label>
+        <input id="input-user-call" type="text" maxlength="20" placeholder="例如：小满">
+
+        <div class="actions">
+          <button id="save-profile-btn" class="primary-btn" type="button">保存设置</button>
+          <span id="profile-feedback" class="feedback" aria-live="polite"></span>
+        </div>
+
+        <h2 class="section-title">头像</h2>
         <div class="avatar-settings">
           <div class="avatar-setting">
             <div class="avatar avatar--lg" id="settings-ta-avatar" aria-hidden="true"></div>
@@ -80,15 +116,24 @@
             </div>
           </div>
         </div>
+
+        <h2 class="section-title">聊天背景</h2>
+        <p class="hint">选择一张图片作为聊天背景。图片只保存在当前浏览器，建议 2MB 以内。</p>
+        <div class="avatar-setting__actions">
+          <button type="button" class="small-btn" id="pick-background-btn">选择背景图</button>
+          <button type="button" class="small-btn" id="clear-background-btn">恢复默认背景</button>
+        </div>
       </main>
     </section>
   </div>
 
   <input id="avatar-file-input" type="file" accept="image/*" hidden>
+  <input id="background-file-input" type="file" accept="image/*" hidden>
 
   <script src="js/config.js"></script>
   <script src="js/storage.js"></script>
   <script src="js/avatar.js"></script>
+  <script src="js/profile.js"></script>
   <script src="js/cards.js"></script>
   <script src="js/chat.js"></script>
   <script src="js/settings.js"></script>
