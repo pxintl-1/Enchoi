@@ -2,6 +2,11 @@ window.APP_CONFIG = {
   siteTitle: "只对你可见",
   taName: "TA",
   userName: "我",
+
+  // 头像：可以填 emoji，也可以填图片 URL，例如 "images/ta.jpg"
+  userAvatar: "🌙",
+  taAvatar: "🌿",
+
   maxHistory: 300,
   replyDelayMin: 400,
   replyDelayMax: 1100,
