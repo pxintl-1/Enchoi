@@ -9,9 +9,41 @@
 </head>
 <body>
   <div class="app">
+    <!-- 主屏 -->
+    <section id="view-home" class="view">
+      <header class="home-header">
+        <div class="home-time" id="home-time">09:41</div>
+        <div class="home-date" id="home-date"></div>
+      </header>
+
+      <main class="home-grid">
+        <button type="button" class="app-icon" id="app-chat">
+          <span class="app-icon__glyph app-icon__glyph--chat">💬</span>
+          <span class="app-icon__label">聊天</span>
+        </button>
+
+        <button type="button" class="app-icon" id="app-cards">
+          <span class="app-icon__glyph app-icon__glyph--cards">🗂️</span>
+          <span class="app-icon__label">字卡</span>
+        </button>
+
+        <button type="button" class="app-icon" id="app-settings">
+          <span class="app-icon__glyph app-icon__glyph--settings">⚙️</span>
+          <span class="app-icon__label">设置</span>
+        </button>
+      </main>
+
+      <footer class="home-dock">
+        <button type="button" class="app-icon app-icon--dock" id="app-chat-dock">
+          <span class="app-icon__glyph app-icon__glyph--chat">💬</span>
+        </button>
+      </footer>
+    </section>
+
     <!-- 聊天视图 -->
-    <section id="view-chat" class="view">
+    <section id="view-chat" class="view" hidden>
       <header class="chat-header">
+        <button id="back-home" class="icon-btn" type="button">主屏</button>
         <div class="chat-header__left">
           <div class="avatar avatar--sm" id="header-ta-avatar" aria-hidden="true"></div>
           <div>
@@ -196,6 +228,7 @@
   <script src="js/profile.js"></script>
   <script src="js/cards.js"></script>
   <script src="js/chat.js"></script>
+  <script src="js/home.js"></script>
   <script src="js/settings.js"></script>
   <script src="js/app.js"></script>
 </body>
