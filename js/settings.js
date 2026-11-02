@@ -4,6 +4,7 @@ const Settings = (() => {
   let profileFeedbackTimer = null;
   let themeFeedbackTimer = null;
   let bubbleFeedbackTimer = null;
+  let customCssFeedbackTimer = null;
   let pickingRole = null;
 
   let activeCategory = CardDeck.ALL_CATEGORY;
@@ -44,6 +45,11 @@ const Settings = (() => {
 
     els.bubbleStyleSelect = document.getElementById("bubble-style-select");
     els.bubbleFeedback = document.getElementById("bubble-feedback");
+
+    els.customCssInput = document.getElementById("custom-css-input");
+    els.applyCustomCssBtn = document.getElementById("apply-custom-css-btn");
+    els.clearCustomCssBtn = document.getElementById("clear-custom-css-btn");
+    els.customCssFeedback = document.getElementById("custom-css-feedback");
 
     els.settingsTaAvatar = document.getElementById("settings-ta-avatar");
     els.settingsUserAvatar = document.getElementById("settings-user-avatar");
@@ -104,6 +110,18 @@ const Settings = (() => {
       els.bubbleStyleSelect.addEventListener("change", onBubbleStyleChange);
     }
 
+    if (els.applyCustomCssBtn) {
+      els.applyCustomCssBtn.addEventListener("click", applyCustomCss);
+    }
+
+    if (els.clearCustomCssBtn) {
+      els.clearCustomCssBtn.addEventListener("click", clearCustomCss);
+    }
+
+    if (els.customCssInput) {
+      els.customCssInput.value = CustomCssStore.get();
+    }
+
     els.saveProfileBtn.addEventListener("click", saveProfile);
     els.avatarFileInput.addEventListener("change", onAvatarPicked);
     els.backgroundFileInput.addEventListener("change", onBackgroundPicked);
@@ -158,6 +176,9 @@ const Settings = (() => {
     showView("settings");
     renderAvatarSettings();
     fillProfileForm();
+    if (els.customCssInput) {
+      els.customCssInput.value = CustomCssStore.get();
+    }
   }
 
   function showChatView() {
@@ -206,6 +227,42 @@ const Settings = (() => {
     bubbleFeedbackTimer = window.setTimeout(() => {
       els.bubbleFeedback.textContent = "";
     }, 2200);
+  }
+
+  function applyCustomCss() {
+    const value = els.customCssInput.value;
+    const ok = CustomCssStore.set(value);
+
+    if (!els.customCssFeedback) return;
+
+    els.customCssFeedback.textContent = ok
+      ? "已应用，聊天页立即生效。"
+      : "保存失败，可能是存储空间不足。";
+
+    els.customCssFeedback.classList.toggle("is-error", !ok);
+
+    if (customCssFeedbackTimer) clearTimeout(customCssFeedbackTimer);
+
+    customCssFeedbackTimer = window.setTimeout(() => {
+      els.customCssFeedback.textContent = "";
+      els.customCssFeedback.classList.remove("is-error");
+    }, 2600);
+  }
+
+  function clearCustomCss() {
+    CustomCssStore.clear();
+    els.customCssInput.value = "";
+
+    if (!els.customCssFeedback) return;
+
+    els.customCssFeedback.textContent = "已清空自定义 CSS。";
+    els.customCssFeedback.classList.remove("is-error");
+
+    if (customCssFeedbackTimer) clearTimeout(customCssFeedbackTimer);
+
+    customCssFeedbackTimer = window.setTimeout(() => {
+      els.customCssFeedback.textContent = "";
+    }, 2600);
   }
 
   function showCardFeedback(message, isError) {
