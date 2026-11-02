@@ -9,56 +9,54 @@
 </head>
 <body>
   <div class="app">
-    <header class="chat-header">
-      <div>
-        <div class="chat-header__name" id="ta-name">TA</div>
-        <div class="chat-header__status" id="typing-status" aria-live="polite">在线</div>
-      </div>
-      <button id="open-settings" class="icon-btn" type="button">字卡</button>
-    </header>
-
-    <main id="message-list" class="message-list" aria-live="polite"></main>
-
-    <footer class="composer">
-      <textarea id="message-input" rows="1" placeholder="说点什么……"></textarea>
-      <button id="send-btn" class="send-btn" type="button">发送</button>
-    </footer>
-  </div>
-
-  <div id="settings-modal" class="modal" hidden>
-    <div class="modal__backdrop" data-close-settings></div>
-    <section class="modal__panel" role="dialog" aria-modal="true" aria-labelledby="settings-title">
-      <header class="modal__header">
-        <h2 id="settings-title">字卡与数据</h2>
-        <button class="icon-btn" type="button" data-close-settings>关闭</button>
+    <!-- 聊天视图 -->
+    <section id="view-chat" class="view">
+      <header class="chat-header">
+        <div>
+          <div class="chat-header__name" id="ta-name">TA</div>
+          <div class="chat-header__status" id="typing-status" aria-live="polite">在线</div>
+        </div>
+        <button id="open-cards-page" class="icon-btn" type="button">管理字卡</button>
       </header>
 
-      <div class="modal__body">
-        <p class="hint">TA 的每一条回复，都会从下面的字卡中随机抽取。</p>
-        <div class="card-count">字卡库：<strong id="card-count">0</strong> 张</div>
+      <main id="message-list" class="message-list" aria-live="polite"></main>
 
-        <div class="row">
-          <input id="new-card-input" type="text" placeholder="输入一张新字卡……">
-          <button id="add-card-btn" type="button">添加</button>
+      <footer class="composer">
+        <textarea id="message-input" rows="1" placeholder="说点什么……"></textarea>
+        <button id="send-btn" class="send-btn" type="button">发送</button>
+      </footer>
+    </section>
+
+    <!-- 字卡视图 -->
+    <section id="view-cards" class="view" hidden>
+      <header class="page-header">
+        <button id="back-to-chat" class="icon-btn" type="button">返回聊天</button>
+        <h1 class="page-title">TA 的字卡库</h1>
+        <span class="page-count">共 <strong id="card-count">0</strong> 张</span>
+      </header>
+
+      <main class="page-body">
+        <p class="hint">
+          在这里写下你想让 TA 说的话。聊天时，TA 的每条回复都会从下面这些字卡里随机抽取。
+        </p>
+
+        <label class="field-label" for="new-card-input">新增字卡</label>
+        <textarea
+          id="new-card-input"
+          rows="3"
+          placeholder="输入一句话或一小段文字……"
+        ></textarea>
+        <div class="actions">
+          <button id="save-card-btn" class="primary-btn" type="button">保存字卡</button>
+          <span id="card-feedback" class="feedback" aria-live="polite"></span>
         </div>
-        <div id="settings-feedback" class="feedback"></div>
 
-        <div id="card-list" class="card-list"></div>
-
-        <h3>批量导入</h3>
-        <p class="hint">支持 JSON 字符串数组，或每行一条。已存在的会自动去重。</p>
-        <textarea id="import-input" rows="4" placeholder='["我在呢。","晚安。"]&#10;或每行一条'></textarea>
-        <button id="import-btn" type="button">导入字卡</button>
-
-        <h3>数据</h3>
-        <div class="button-row">
-          <button id="export-cards-btn" type="button">导出字卡 JSON</button>
-          <button id="export-history-btn" type="button">导出聊天记录 JSON</button>
-          <button id="clear-history-btn" class="danger" type="button">清空聊天记录</button>
-        </div>
-
-        <p class="hint">数据保存在当前浏览器 localStorage 中，不会自动同步到其他设备。请定期导出备份。</p>
-      </div>
+        <h2 class="section-title">已保存的字卡</h2>
+        <ul id="card-list" class="card-list"></ul>
+        <p id="card-empty" class="hint" hidden>
+          还没有字卡。先在上方保存一张，再回聊天页试试。
+        </p>
+      </main>
     </section>
   </div>
 
