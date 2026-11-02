@@ -134,6 +134,17 @@
           <button id="add-category-btn" class="small-btn" type="button">新建分类</button>
         </div>
 
+        <h2 class="section-title">导出 / 导入字卡</h2>
+        <p class="hint">
+          导出会把当前好友的全部字卡保存为 JSON 文件。导入会把 JSON 里的字卡追加到当前好友字卡库，重复的自动跳过。
+        </p>
+        <div class="actions">
+          <button id="export-cards-btn" class="small-btn" type="button">导出字卡</button>
+          <button id="import-cards-btn" class="small-btn" type="button">导入字卡</button>
+          <span id="transfer-feedback" class="feedback" aria-live="polite"></span>
+        </div>
+        <input id="import-cards-file" type="file" accept="application/json,.json" hidden>
+
         <h2 class="section-title">已保存的字卡</h2>
         <div id="category-tabs" class="category-tabs"></div>
         <ul id="card-list" class="card-list"></ul>
