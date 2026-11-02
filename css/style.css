@@ -713,7 +713,28 @@ img {
 body.keyboard-open .app {
   height: var(--app-visual-height, 100dvh);
 }
+#batch-card-input {
+  width: 100%;
+  max-width: 100%;
+  padding: 11px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  outline: none;
+  background: #fff;
+  line-height: 1.5;
+  font-size: 16px;
+  resize: vertical;
+}
 
+#batch-card-input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+#batch-category-label {
+  color: var(--accent);
+  font-weight: 600;
+}
 body.keyboard-open .chat-header,
 body.keyboard-open .page-header {
   padding-top: 6px;
