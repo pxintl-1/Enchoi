@@ -13,7 +13,6 @@
   --danger: #e64340;
 
   --header-h: 52px;
-  --composer-min-h: 58px;
   --app-max-w: 720px;
   --safe-bottom: env(safe-area-inset-bottom, 0px);
   --safe-top: env(safe-area-inset-top, 0px);
@@ -45,7 +44,8 @@ body {
 
 button,
 input,
-textarea {
+textarea,
+select {
   font: inherit;
   color: inherit;
 }
@@ -55,7 +55,9 @@ button {
   touch-action: manipulation;
 }
 
-textarea {
+textarea,
+input,
+select {
   -webkit-appearance: none;
   appearance: none;
 }
@@ -337,7 +339,7 @@ img {
   color: var(--text);
   line-height: 1.4;
   resize: none;
-  font-size: 16px; /* 避免 iOS 聚焦时自动放大 */
+  font-size: 16px;
 }
 
 .composer textarea:focus {
@@ -428,7 +430,7 @@ img {
   outline: none;
   background: #fff;
   line-height: 1.5;
-  font-size: 16px; /* 避免 iOS 聚焦放大 */
+  font-size: 16px;
 }
 
 #new-card-input {
@@ -491,12 +493,26 @@ img {
 }
 
 .card-list li {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
   padding: 10px 12px;
   border: 1px solid var(--border);
   border-radius: 8px;
   background: #fff;
   font-size: 14px;
   line-height: 1.55;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.card-list__category {
+  font-size: 11px;
+  color: var(--accent);
+}
+
+.card-list__text {
   white-space: pre-wrap;
   overflow-wrap: anywhere;
   word-break: break-word;
@@ -561,6 +577,71 @@ img {
 
 .message-list--custom-bg .bubble {
   backdrop-filter: blur(0.5px);
+}
+
+/* ===== 分类相关 ===== */
+.category-select,
+.inline-input {
+  width: 100%;
+  max-width: 100%;
+  min-height: 40px;
+  padding: 9px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  outline: none;
+  background: #fff;
+  font-size: 16px;
+}
+
+.category-select:focus,
+.inline-input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+.inline-input {
+  flex: 1 1 160px;
+  min-width: 0;
+}
+
+.category-tabs {
+  display: flex;
+  gap: 8px;
+  margin: 8px 0 12px;
+  padding-bottom: 4px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.category-tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.category-tab {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 34px;
+  padding: 6px 12px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--text);
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.category-tab.is-active {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: #fff;
+}
+
+.category-tab__count {
+  font-size: 11px;
+  opacity: 0.75;
 }
 
 /* ===== 小屏手机细化 ===== */
@@ -632,86 +713,7 @@ img {
 body.keyboard-open .app {
   height: var(--app-visual-height, 100dvh);
 }
-.category-select,
-.inline-input {
-  width: 100%;
-  max-width: 100%;
-  min-height: 40px;
-  padding: 9px 12px;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  outline: none;
-  background: #fff;
-  font-size: 16px;
-}
 
-.category-select:focus,
-.inline-input:focus {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 3px var(--accent-soft);
-}
-
-.inline-input {
-  flex: 1 1 160px;
-  min-width: 0;
-}
-
-.category-tabs {
-  display: flex;
-  gap: 8px;
-  margin: 8px 0 12px;
-  padding-bottom: 4px;
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: none;
-}
-
-.category-tabs::-webkit-scrollbar {
-  display: none;
-}
-
-.category-tab {
-  flex: 0 0 auto;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  min-height: 34px;
-  padding: 6px 12px;
-  border: 1px solid var(--border);
-  border-radius: 999px;
-  background: #fff;
-  color: var(--text);
-  font-size: 13px;
-  white-space: nowrap;
-}
-
-.category-tab.is-active {
-  border-color: var(--accent);
-  background: var(--accent);
-  color: #fff;
-}
-
-.category-tab__count {
-  font-size: 11px;
-  opacity: 0.75;
-}
-
-.card-list li {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.card-list__category {
-  font-size: 11px;
-  color: var(--accent);
-}
-
-.card-list__text {
-  white-space: pre-wrap;
-  overflow-wrap: anywhere;
-  word-break: break-word;
-}
 body.keyboard-open .chat-header,
 body.keyboard-open .page-header {
   padding-top: 6px;
