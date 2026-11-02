@@ -461,7 +461,7 @@ const Settings = (() => {
     transferFeedbackTimer = window.setTimeout(() => {
       els.transferFeedback.textContent = "";
       els.transferFeedback.classList.remove("is-error");
-    }, 3200);
+    }, 3600);
   }
 
   function refreshCardsView() {
@@ -542,7 +542,9 @@ const Settings = (() => {
       const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
       const suffix =
-        selected === CardDeck.ALL_CATEGORY ? "all" : selected.replace(/\s+/g, "_");
+        selected === CardDeck.ALL_CATEGORY
+          ? "all"
+          : selected.replace(/\s+/g, "_");
       link.href = url;
       link.download = `cards-${(contact.name || "TA")}-${suffix}-${new Date()
         .toISOString()
@@ -632,12 +634,15 @@ const Settings = (() => {
 
       let added = 0;
       let total = 0;
+      const touchedCategories = [];
 
       byCategory.forEach((texts, category) => {
+        CardDeck.addCategory(category);
         const result = CardDeck.importFromArray(texts, category);
         if (result.ok) {
           added += result.added;
           total = result.total;
+          if (result.added > 0) touchedCategories.push(category);
         }
       });
 
@@ -648,9 +653,14 @@ const Settings = (() => {
 
       const skipped = list.length - added;
       const parts = [`已导入 ${added} 张字卡`];
+
+      if (touchedCategories.length > 0) {
+        parts.push(`分类：${touchedCategories.join("、")}`);
+      }
+
       if (skipped > 0) parts.push(`跳过 ${skipped} 张重复`);
       parts.push(`当前共 ${total} 张`);
-      showTransferFeedback(parts.join("，") + "。");
+      showTransferFeedback(parts.join("；") + "。");
     };
 
     reader.onerror = () => {
