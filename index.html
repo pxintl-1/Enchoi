@@ -43,8 +43,11 @@
 
       <main class="page-body">
         <p class="hint">
-          在这里写下你想让 TA 说的话。聊天时，TA 的每条回复都会从下面这些字卡里随机抽取。
+          在这里写下你想让 TA 说的话。聊天时，TA 的每条回复都会从字卡里随机抽取。
         </p>
+
+        <label class="field-label" for="card-category-select">聊天抽取范围</label>
+        <select id="card-category-select" class="category-select"></select>
 
         <label class="field-label" for="new-card-input">新增字卡</label>
         <textarea
@@ -57,10 +60,23 @@
           <span id="card-feedback" class="feedback" aria-live="polite"></span>
         </div>
 
+        <h2 class="section-title">新建分类</h2>
+        <div class="actions">
+          <input
+            id="new-category-input"
+            class="inline-input"
+            type="text"
+            maxlength="20"
+            placeholder="例如：晚安 / 撒娇 / 安慰"
+          >
+          <button id="add-category-btn" class="small-btn" type="button">新建分类</button>
+        </div>
+
         <h2 class="section-title">已保存的字卡</h2>
+        <div id="category-tabs" class="category-tabs"></div>
         <ul id="card-list" class="card-list"></ul>
         <p id="card-empty" class="hint" hidden>
-          还没有字卡。先在上方保存一张，再回聊天页试试。
+          当前分类下还没有字卡。
         </p>
       </main>
     </section>
