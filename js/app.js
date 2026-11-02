@@ -1,25 +1,18 @@
 document.addEventListener("DOMContentLoaded", () => {
   document.title = window.APP_CONFIG.siteTitle;
 
-  const taName = document.getElementById("ta-name");
-  if (taName) {
-    const profile = typeof ProfileStore !== "undefined" ? ProfileStore.get() : null;
-    taName.textContent = profile && profile.taName
-      ? profile.taName
-      : window.APP_CONFIG.taName;
-  }
-
   Chat.init();
   Settings.init();
+
+  const active = Contacts.getActive();
+  Chat.setContact(active.id);
+  CardDeck.loadFor(active.id);
 
   setupViewport();
   setupKeyboardHandling();
 });
 
 function setupViewport() {
-  const app = document.querySelector(".app");
-  if (!app) return;
-
   function apply() {
     const height = window.visualViewport
       ? window.visualViewport.height
@@ -73,11 +66,8 @@ function setupKeyboardHandling() {
       const current = window.visualViewport.height;
       const diff = baseline - current;
 
-      if (diff > 120) {
-        setKeyboard(true);
-      } else if (diff < 60) {
-        setKeyboard(false);
-      }
+      if (diff > 120) setKeyboard(true);
+      else if (diff < 60) setKeyboard(false);
     });
   }
 }
