@@ -10,7 +10,6 @@ const Chat = (() => {
     els.list = document.getElementById("message-list");
     els.input = document.getElementById("message-input");
     els.send = document.getElementById("send-btn");
-    els.status = document.getElementById("typing-status");
 
     els.send.addEventListener("click", send);
 
@@ -23,7 +22,6 @@ const Chat = (() => {
 
     els.input.addEventListener("input", resizeInput);
     render();
-    updateStatus();
   }
 
   function resizeInput() {
@@ -45,28 +43,62 @@ const Chat = (() => {
     return div.innerHTML;
   }
 
+  function renderAvatar(role) {
+    const value =
+      role === "user"
+        ? window.APP_CONFIG.userAvatar
+        : window.APP_CONFIG.taAvatar;
+
+    const safe = String(value || "").trim();
+
+    if (!safe) {
+      return `<div class="avatar">${role === "user" ? "我" : "TA"}</div>`;
+    }
+
+    if (/^https?:\/\//i.test(safe) || safe.startsWith("./") || safe.startsWith("../")) {
+      return `<div class="avatar"><img src="${escapeHtml(safe)}" alt=""></div>`;
+    }
+
+    return `<div class="avatar">${escapeHtml(safe)}</div>`;
+  }
+
   function render() {
     if (!els.list) return;
 
     if (messages.length === 0) {
       els.list.innerHTML =
-        '<div class="empty-state">这里只有你和 TA。<br>发一条消息，看看 TA 会抽到哪张字卡。</div>';
+        '<div class="empty-state">这里只有你和 TA。<br>发一条消息，等 TA 回你。</div>';
       return;
     }
 
-    els.list.innerHTML = messages
+    const html = messages
       .map((message) => {
         const role = message.role === "user" ? "user" : "ta";
         return `
           <div class="message message--${role}">
-            <div class="bubble">${escapeHtml(message.text)}</div>
-            <div class="time">${formatTime(message.time)}</div>
+            ${renderAvatar(role)}
+            <div class="message__body">
+              <div class="bubble">${escapeHtml(message.text)}</div>
+              <div class="time">${formatTime(message.time)}</div>
+            </div>
           </div>
         `;
       })
       .join("");
 
+    els.list.innerHTML = html + (replying ? renderTyping() : "");
     scrollToBottom();
+  }
+
+  function renderTyping() {
+    return `
+      <div class="message message--ta" id="typing-row">
+        ${renderAvatar("ta")}
+        <div class="message__body">
+          <div class="typing"><span></span><span></span><span></span></div>
+        </div>
+      </div>
+    `;
   }
 
   function scrollToBottom() {
@@ -76,20 +108,10 @@ const Chat = (() => {
   }
 
   function append(role, text) {
-    messages.push({
-      role,
-      text,
-      time: Date.now()
-    });
-
+    messages.push({ role, text, time: Date.now() });
     messages = messages.slice(-window.APP_CONFIG.maxHistory);
     Storage.saveHistory(messages);
     render();
-  }
-
-  function updateStatus() {
-    if (!els.status) return;
-    els.status.textContent = replying ? "正在输入…" : "在线";
   }
 
   function send() {
@@ -101,8 +123,8 @@ const Chat = (() => {
     append("user", text);
 
     replying = true;
-    updateStatus();
     els.send.disabled = true;
+    render();
 
     const delay =
       window.APP_CONFIG.replyDelayMin +
@@ -111,12 +133,10 @@ const Chat = (() => {
 
     replyTimer = window.setTimeout(() => {
       const reply = CardDeck.draw();
-      append("ta", reply);
-
       replying = false;
       replyTimer = null;
-      updateStatus();
       els.send.disabled = false;
+      append("ta", reply);
       els.input.focus();
     }, delay);
   }
@@ -131,7 +151,6 @@ const Chat = (() => {
     els.send.disabled = false;
     messages = [];
     Storage.clearHistory();
-    updateStatus();
     render();
   }
 
@@ -139,9 +158,5 @@ const Chat = (() => {
     return [...messages];
   }
 
-  return {
-    init,
-    clear,
-    getHistory
-  };
+  return { init, clear, getHistory };
 })();
