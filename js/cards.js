@@ -20,7 +20,7 @@ const CardDeck = (() => {
 
   function draw() {
     if (cards.length === 0) {
-      return "（字卡库是空的，点右上角“字卡”添加一些吧）";
+      return "（字卡库是空的，点右上角“管理字卡”添加一些吧）";
     }
 
     if (cards.length === 1) {
