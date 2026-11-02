@@ -2,6 +2,7 @@ const Settings = (() => {
   let els = {};
   let feedbackTimer = null;
   let profileFeedbackTimer = null;
+  let themeFeedbackTimer = null;
   let pickingRole = null;
 
   let activeCategory = CardDeck.ALL_CATEGORY;
@@ -35,6 +36,10 @@ const Settings = (() => {
     els.inputUserCall = document.getElementById("input-user-call");
     els.saveProfileBtn = document.getElementById("save-profile-btn");
     els.profileFeedback = document.getElementById("profile-feedback");
+
+    els.themeToggle = document.getElementById("theme-toggle");
+    els.settingsThemeToggle = document.getElementById("settings-theme-toggle");
+    els.themeFeedback = document.getElementById("theme-feedback");
 
     els.settingsTaAvatar = document.getElementById("settings-ta-avatar");
     els.settingsUserAvatar = document.getElementById("settings-user-avatar");
@@ -82,6 +87,14 @@ const Settings = (() => {
       renderCards();
     });
 
+    if (els.themeToggle) {
+      els.themeToggle.addEventListener("click", toggleTheme);
+    }
+
+    if (els.settingsThemeToggle) {
+      els.settingsThemeToggle.addEventListener("click", toggleTheme);
+    }
+
     els.saveProfileBtn.addEventListener("click", saveProfile);
     els.avatarFileInput.addEventListener("change", onAvatarPicked);
     els.backgroundFileInput.addEventListener("change", onBackgroundPicked);
@@ -111,6 +124,7 @@ const Settings = (() => {
       });
     });
 
+    updateThemeButton();
     renderCategorySelect();
     renderCards();
     renderAvatarSettings();
@@ -139,6 +153,28 @@ const Settings = (() => {
 
   function showChatView() {
     showView("chat");
+  }
+
+  function updateThemeButton() {
+    if (!els.themeToggle) return;
+    const isDark = ThemeStore.get() === ThemeStore.DARK;
+    els.themeToggle.textContent = isDark ? "日间" : "夜间";
+  }
+
+  function toggleTheme() {
+    const next = ThemeStore.toggle();
+    updateThemeButton();
+
+    if (!els.themeFeedback) return;
+
+    els.themeFeedback.textContent =
+      next === ThemeStore.DARK ? "已切换到夜间模式。" : "已切换到日间模式。";
+
+    if (themeFeedbackTimer) clearTimeout(themeFeedbackTimer);
+
+    themeFeedbackTimer = window.setTimeout(() => {
+      els.themeFeedback.textContent = "";
+    }, 2200);
   }
 
   function showCardFeedback(message, isError) {
@@ -315,7 +351,6 @@ const Settings = (() => {
     renderCategorySelect();
     renderCards();
     showCardFeedback(`已切换到新分类「${name}」，现在添加的字卡会放进去。`);
-    els.newCardInput.focus();
   }
 
   function fillProfileForm() {
