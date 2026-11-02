@@ -24,6 +24,8 @@ const Settings = (() => {
     els.openSettingsBtn = document.getElementById("open-settings-page");
     els.backBtn = document.getElementById("back-to-chat");
     els.backBtn2 = document.getElementById("back-to-chat-2");
+    els.cardsToHome = document.getElementById("cards-to-home");
+    els.settingsToHome = document.getElementById("settings-to-home");
 
     els.cardCount = document.getElementById("card-count");
     els.categorySelect = document.getElementById("card-category-select");
@@ -67,6 +69,14 @@ const Settings = (() => {
 
     els.backHome.addEventListener("click", () => Home.showHome());
     els.appChatDock.addEventListener("click", () => Home.show("chat"));
+
+    if (els.cardsToHome) {
+      els.cardsToHome.addEventListener("click", () => Home.showHome());
+    }
+
+    if (els.settingsToHome) {
+      els.settingsToHome.addEventListener("click", () => Home.showHome());
+    }
 
     els.openCardsBtn.addEventListener("click", showCardsView);
     els.openSettingsBtn.addEventListener("click", showSettingsView);
@@ -380,7 +390,9 @@ const Settings = (() => {
       })
       .join("");
 
-    els.cardCount.textContent = String(CardDeck.getAll().length);
+    if (els.cardCount) {
+      els.cardCount.textContent = String(CardDeck.getAll().length);
+    }
 
     const list = CardDeck.getByCategory(activeCategory);
 
