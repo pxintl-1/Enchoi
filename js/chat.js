@@ -12,6 +12,7 @@ const Chat = (() => {
     els.send = document.getElementById("send-btn");
     els.status = document.getElementById("typing-status");
     els.headerTaAvatar = document.getElementById("header-ta-avatar");
+    els.taName = document.getElementById("ta-name");
 
     els.send.addEventListener("click", send);
 
@@ -24,7 +25,8 @@ const Chat = (() => {
 
     els.input.addEventListener("input", resizeInput);
 
-    renderHeaderAvatar();
+    applyProfile();
+    applyBackground();
     render();
     updateStatus();
   }
@@ -52,11 +54,18 @@ const Chat = (() => {
     return dataUrl ? `style="background-image:url('${dataUrl}')"` : "";
   }
 
-  function avatarInitial(role) {
+  function profileName(role) {
+    const profile = ProfileStore.get();
+
     if (role === "user") {
-      return (window.APP_CONFIG.userName || "我").slice(0, 1);
+      return profile.userName || window.APP_CONFIG.userName || "我";
     }
-    return (window.APP_CONFIG.taName || "TA").slice(0, 1);
+
+    return profile.taName || window.APP_CONFIG.taName || "TA";
+  }
+
+  function avatarInitial(role) {
+    return profileName(role).slice(0, 1);
   }
 
   function renderAvatarHtml(role, sizeClass) {
@@ -74,6 +83,34 @@ const Chat = (() => {
     els.headerTaAvatar.classList.toggle("avatar--ta-default", !dataUrl);
     els.headerTaAvatar.style.backgroundImage = dataUrl ? `url('${dataUrl}')` : "";
     els.headerTaAvatar.textContent = dataUrl ? "" : avatarInitial("ta");
+  }
+
+  function applyProfile() {
+    const profile = ProfileStore.get();
+
+    if (els.taName) {
+      els.taName.textContent = profile.taName || "TA";
+    }
+
+    document.title = window.APP_CONFIG.siteTitle;
+    renderHeaderAvatar();
+  }
+
+  function applyBackground() {
+    const profile = ProfileStore.get();
+    const list = els.list;
+
+    if (!list) return;
+
+    if (profile.chatBackground) {
+      list.style.backgroundImage = `url('${profile.chatBackground}')`;
+      list.style.backgroundSize = "cover";
+      list.style.backgroundPosition = "center";
+      list.classList.add("message-list--custom-bg");
+    } else {
+      list.style.backgroundImage = "";
+      list.classList.remove("message-list--custom-bg");
+    }
   }
 
   function render() {
@@ -173,8 +210,9 @@ const Chat = (() => {
     return [...messages];
   }
 
-  function refreshAvatars() {
-    renderHeaderAvatar();
+  function refreshAppearance() {
+    applyProfile();
+    applyBackground();
     render();
   }
 
@@ -182,6 +220,7 @@ const Chat = (() => {
     init,
     clear,
     getHistory,
-    refreshAvatars
+    refreshAvatars: refreshAppearance,
+    refreshAppearance
   };
 })();
