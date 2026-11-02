@@ -44,26 +44,32 @@
     <section id="view-contacts" class="view" hidden>
       <header class="page-header">
         <button id="contacts-to-home" class="icon-btn" type="button">主屏</button>
-        <h1 class="page-title">聊天</h1>
-        <button id="open-cards-page" class="icon-btn" type="button">字卡</button>
+        <h1 class="page-title">好友</h1>
+        <button id="contacts-to-settings" class="icon-btn" type="button">设置</button>
       </header>
 
       <main class="page-body">
         <div class="actions">
-          <input id="new-contact-input" class="inline-input" type="text" maxlength="20" placeholder="新联系人名字">
-          <button id="add-contact-btn" class="small-btn" type="button">添加联系人</button>
+          <input
+            id="new-contact-input"
+            class="inline-input"
+            type="text"
+            maxlength="20"
+            placeholder="新好友名字"
+          >
+          <button id="add-contact-btn" class="small-btn" type="button">添加好友</button>
           <span id="contact-feedback" class="feedback" aria-live="polite"></span>
         </div>
 
         <ul id="contact-list" class="contact-list"></ul>
-        <p id="contact-empty" class="hint" hidden>还没有联系人，先添加一个。</p>
+        <p id="contact-empty" class="hint" hidden>还没有好友，先添加一个。</p>
       </main>
     </section>
 
     <!-- 聊天视图 -->
     <section id="view-chat" class="view" hidden>
       <header class="chat-header">
-        <button id="back-contacts" class="icon-btn" type="button">联系人</button>
+        <button id="back-contacts" class="icon-btn" type="button">好友</button>
         <div class="chat-header__left">
           <div class="avatar avatar--sm" id="header-ta-avatar" aria-hidden="true"></div>
           <div>
@@ -89,15 +95,15 @@
     <!-- 字卡视图 -->
     <section id="view-cards" class="view" hidden>
       <header class="page-header">
-        <button id="cards-to-contacts" class="icon-btn" type="button">联系人</button>
+        <button id="cards-to-contacts" class="icon-btn" type="button">好友</button>
         <h1 class="page-title">字卡库</h1>
         <button id="cards-to-home" class="icon-btn" type="button">主屏</button>
       </header>
 
       <main class="page-body">
         <p class="hint">
-          当前联系人：<strong id="cards-contact-name">TA</strong>。
-          字卡、分类、抽取范围都只对当前联系人生效。
+          当前好友：<strong id="cards-contact-name">TA</strong>。
+          字卡、分类、抽取范围都只对当前好友生效。
         </p>
 
         <label class="field-label" for="card-category-select">聊天抽取范围</label>
@@ -120,7 +126,13 @@
 
         <h2 class="section-title">新建分类</h2>
         <div class="actions">
-          <input id="new-category-input" class="inline-input" type="text" maxlength="20" placeholder="例如：晚安 / 撒娇 / 安慰">
+          <input
+            id="new-category-input"
+            class="inline-input"
+            type="text"
+            maxlength="20"
+            placeholder="例如：晚安 / 撒娇 / 安慰"
+          >
           <button id="add-category-btn" class="small-btn" type="button">新建分类</button>
         </div>
 
@@ -134,15 +146,13 @@
     <!-- 设置视图 -->
     <section id="view-settings" class="view" hidden>
       <header class="page-header">
-        <button id="back-to-chat-2" class="icon-btn" type="button">返回聊天</button>
+        <button id="back-to-chat-2" class="icon-btn" type="button">返回</button>
         <h1 class="page-title">设置</h1>
         <button id="settings-to-home" class="icon-btn" type="button">主屏</button>
       </header>
 
       <main class="page-body">
-        <p class="hint">
-          这些信息只保存在当前浏览器，不会上传到任何服务器。
-        </p>
+        <p class="hint">这些信息只保存在当前浏览器，不会上传到任何服务器。</p>
 
         <h2 class="section-title">显示模式</h2>
         <div class="actions">
@@ -172,7 +182,7 @@
           <span id="custom-css-feedback" class="feedback" aria-live="polite"></span>
         </div>
 
-        <h2 class="section-title">当前联系人</h2>
+        <h2 class="section-title">当前好友</h2>
         <label class="field-label" for="input-ta-name">TA 的名字</label>
         <input id="input-ta-name" type="text" maxlength="20" placeholder="例如：小满">
 
@@ -195,7 +205,7 @@
         <div class="avatar-settings">
           <div class="avatar-setting">
             <div class="avatar avatar--lg" id="settings-ta-avatar" aria-hidden="true"></div>
-            <div class="avatar-setting__label">当前联系人头像</div>
+            <div class="avatar-setting__label">当前好友头像</div>
             <div class="avatar-setting__actions">
               <button type="button" class="small-btn" data-pick-avatar="ta">更换</button>
               <button type="button" class="small-btn" data-clear-avatar="ta">恢复默认</button>
