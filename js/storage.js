@@ -1,5 +1,6 @@
 const Storage = (() => {
   const K = window.APP_CONFIG.storageKeys;
+  const DEFAULT_ID = "default";
 
   function load(key, fallback) {
     try {
@@ -22,27 +23,72 @@ const Storage = (() => {
     }
   }
 
+  function historyKey(contactId) {
+    return `${K.history}__${contactId || DEFAULT_ID}`;
+  }
+
+  function cardsKey(contactId) {
+    return `${K.cards}__${contactId || DEFAULT_ID}`;
+  }
+
+  function categoriesKey(contactId) {
+    return `private_chat_categories_v1__${contactId || DEFAULT_ID}`;
+  }
+
+  function migrateLegacy() {
+    try {
+      const legacyHistory = localStorage.getItem(K.history);
+      const legacyCards = localStorage.getItem(K.cards);
+      const legacyCategories = localStorage.getItem("private_chat_categories_v1");
+
+      if (legacyHistory && !localStorage.getItem(historyKey(DEFAULT_ID))) {
+        localStorage.setItem(historyKey(DEFAULT_ID), legacyHistory);
+      }
+
+      if (legacyCards && !localStorage.getItem(cardsKey(DEFAULT_ID))) {
+        localStorage.setItem(cardsKey(DEFAULT_ID), legacyCards);
+      }
+
+      if (legacyCategories && !localStorage.getItem(categoriesKey(DEFAULT_ID))) {
+        localStorage.setItem(categoriesKey(DEFAULT_ID), legacyCategories);
+      }
+    } catch (error) {
+      // 忽略迁移失败
+    }
+  }
+
+  migrateLegacy();
+
   return {
-    getCards() {
-      return load(K.cards, null);
+    historyKey,
+    cardsKey,
+    categoriesKey,
+
+    getCards(contactId) {
+      return load(cardsKey(contactId), null);
     },
-    saveCards(cards) {
-      return save(K.cards, cards);
+    saveCards(contactId, cards) {
+      return save(cardsKey(contactId), cards);
     },
-    getHistory() {
-      return load(K.history, []);
+
+    getCategories(contactId) {
+      return load(categoriesKey(contactId), []);
     },
-    saveHistory(messages) {
-      return save(K.history, messages.slice(-window.APP_CONFIG.maxHistory));
+    saveCategories(contactId, list) {
+      return save(categoriesKey(contactId), list);
     },
-    clearHistory() {
-      localStorage.removeItem(K.history);
+
+    getHistory(contactId) {
+      return load(historyKey(contactId), []);
     },
-    getSettings() {
-      return load(K.settings, {});
+    saveHistory(contactId, messages) {
+      return save(
+        historyKey(contactId),
+        messages.slice(-window.APP_CONFIG.maxHistory)
+      );
     },
-    saveSettings(settings) {
-      return save(K.settings, settings);
+    clearHistory(contactId) {
+      localStorage.removeItem(historyKey(contactId));
     }
   };
 })();
