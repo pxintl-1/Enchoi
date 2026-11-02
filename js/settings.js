@@ -2,6 +2,7 @@ const Settings = (() => {
   let els = {};
   let feedbackTimer = null;
   let profileFeedbackTimer = null;
+  let contactFeedbackTimer = null;
   let themeFeedbackTimer = null;
   let bubbleFeedbackTimer = null;
   let customCssFeedbackTimer = null;
@@ -13,21 +14,31 @@ const Settings = (() => {
 
   function init() {
     els.viewHome = document.getElementById("view-home");
+    els.viewContacts = document.getElementById("view-contacts");
     els.viewChat = document.getElementById("view-chat");
     els.viewCards = document.getElementById("view-cards");
     els.viewSettings = document.getElementById("view-settings");
 
-    els.backHome = document.getElementById("back-home");
-    els.appChatDock = document.getElementById("app-chat-dock");
-
-    els.openCardsBtn = document.getElementById("open-cards-page");
-    els.openSettingsBtn = document.getElementById("open-settings-page");
-    els.backBtn = document.getElementById("back-to-chat");
-    els.backBtn2 = document.getElementById("back-to-chat-2");
+    els.contactsToHome = document.getElementById("contacts-to-home");
     els.cardsToHome = document.getElementById("cards-to-home");
     els.settingsToHome = document.getElementById("settings-to-home");
+    els.backContacts = document.getElementById("back-contacts");
+    els.cardsToContacts = document.getElementById("cards-to-contacts");
+    els.backToChat2 = document.getElementById("back-to-chat-2");
 
-    els.cardCount = document.getElementById("card-count");
+    els.appChatDock = document.getElementById("app-chat-dock");
+
+    els.newContactInput = document.getElementById("new-contact-input");
+    els.addContactBtn = document.getElementById("add-contact-btn");
+    els.contactFeedback = document.getElementById("contact-feedback");
+    els.contactList = document.getElementById("contact-list");
+    els.contactEmpty = document.getElementById("contact-empty");
+
+    els.openCardsBtn = document.getElementById("open-cards-page");
+    els.openCardsBtn2 = document.getElementById("open-cards-page-2");
+    els.openSettingsBtn = document.getElementById("open-settings-page");
+
+    els.cardsContactName = document.getElementById("cards-contact-name");
     els.categorySelect = document.getElementById("card-category-select");
     els.saveCategorySelect = document.getElementById("save-category-select");
     els.newCardInput = document.getElementById("new-card-input");
@@ -67,84 +78,53 @@ const Settings = (() => {
 
     Home.init();
 
-    els.backHome.addEventListener("click", () => Home.showHome());
-    els.appChatDock.addEventListener("click", () => Home.show("chat"));
-
-    if (els.cardsToHome) {
-      els.cardsToHome.addEventListener("click", () => Home.showHome());
-    }
-
-    if (els.settingsToHome) {
-      els.settingsToHome.addEventListener("click", () => Home.showHome());
-    }
+    els.appChatDock.addEventListener("click", () => Home.show("contacts"));
+    els.contactsToHome.addEventListener("click", () => Home.showHome());
+    els.cardsToHome.addEventListener("click", () => Home.showHome());
+    els.settingsToHome.addEventListener("click", () => Home.showHome());
+    els.backContacts.addEventListener("click", () => Home.show("contacts"));
+    els.cardsToContacts.addEventListener("click", () => Home.show("contacts"));
+    els.backToChat2.addEventListener("click", () => Home.show("chat"));
 
     els.openCardsBtn.addEventListener("click", showCardsView);
+    els.openCardsBtn2.addEventListener("click", showCardsView);
     els.openSettingsBtn.addEventListener("click", showSettingsView);
-    els.backBtn.addEventListener("click", showChatView);
-    els.backBtn2.addEventListener("click", showChatView);
 
-    els.saveCardBtn.addEventListener("click", saveCards);
-    els.newCardInput.addEventListener("keydown", (event) => {
-      if ((event.ctrlKey || event.metaKey) && event.key === "Enter") {
+    els.addContactBtn.addEventListener("click", addContact);
+    els.newContactInput.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") {
         event.preventDefault();
-        saveCards();
+        addContact();
       }
     });
+    els.contactList.addEventListener("click", onContactListClick);
 
+    els.saveCardBtn.addEventListener("click", saveCards);
+    els.addCategoryBtn.addEventListener("click", addCategory);
+    els.categoryTabs.addEventListener("click", onCategoryTabClick);
+    els.cardList.addEventListener("click", onCardListClick);
+    els.categorySelect.addEventListener("change", onChatCategoryChange);
     els.saveCategorySelect.addEventListener("change", () => {
       saveCategory = els.saveCategorySelect.value || CardDeck.DEFAULT_CATEGORY;
       els.saveCategorySelect.blur();
     });
 
-    els.addCategoryBtn.addEventListener("click", addCategory);
-    els.newCategoryInput.addEventListener("keydown", (event) => {
-      if (event.key === "Enter") {
-        event.preventDefault();
-        addCategory();
-      }
-    });
-
-    els.categorySelect.addEventListener("change", () => {
-      chatCategory = els.categorySelect.value;
-      els.categorySelect.blur();
-      showCardFeedback(
-        chatCategory === CardDeck.ALL_CATEGORY
-          ? "聊天将从全部分类里抽取。"
-          : `聊天只从「${chatCategory}」里抽取。`
-      );
-      Chat.setCardCategory(chatCategory);
-    });
-
-    els.categoryTabs.addEventListener("click", (event) => {
-      const button = event.target.closest("[data-category]");
-      if (!button) return;
-      activeCategory = button.dataset.category;
-      renderCards();
-    });
-
-    els.cardList.addEventListener("click", onCardListClick);
-
     if (els.themeToggle) {
       els.themeToggle.addEventListener("click", toggleTheme);
     }
-
     if (els.settingsThemeToggle) {
       els.settingsThemeToggle.addEventListener("click", toggleTheme);
     }
-
     if (els.bubbleStyleSelect) {
       els.bubbleStyleSelect.value = BubbleStore.get();
       els.bubbleStyleSelect.addEventListener("change", onBubbleStyleChange);
     }
-
     if (els.applyCustomCssBtn) {
       els.applyCustomCssBtn.addEventListener("click", applyCustomCss);
     }
-
     if (els.clearCustomCssBtn) {
       els.clearCustomCssBtn.addEventListener("click", clearCustomCss);
     }
-
     if (els.customCssInput) {
       els.customCssInput.value = CustomCssStore.get();
     }
@@ -152,12 +132,10 @@ const Settings = (() => {
     els.saveProfileBtn.addEventListener("click", saveProfile);
     els.avatarFileInput.addEventListener("change", onAvatarPicked);
     els.backgroundFileInput.addEventListener("change", onBackgroundPicked);
-
     els.pickBackgroundBtn.addEventListener("click", () => {
       els.backgroundFileInput.value = "";
       els.backgroundFileInput.click();
     });
-
     els.clearBackgroundBtn.addEventListener("click", clearBackground);
 
     document.querySelectorAll("[data-pick-avatar]").forEach((button) => {
@@ -170,27 +148,145 @@ const Settings = (() => {
 
     document.querySelectorAll("[data-clear-avatar]").forEach((button) => {
       button.addEventListener("click", () => {
-        const role = button.dataset.clearAvatar;
-        AvatarStore.clear(role);
-        renderAvatarSettings();
-        Chat.refreshAppearance();
-        showProfileFeedback("已恢复默认头像。");
+        clearAvatar(button.dataset.clearAvatar);
       });
     });
 
+    document.addEventListener("app:viewchange", (event) => {
+      const view = event.detail && event.detail.view;
+      if (view === "contacts") renderContacts();
+      if (view === "cards") refreshCardsView();
+      if (view === "settings") refreshSettingsView();
+      if (view === "chat") Chat.refreshAppearance();
+    });
+
     updateThemeButton();
+    renderContacts();
+    updateHomeClock();
+  }
+
+  function currentContact() {
+    return Contacts.getActive();
+  }
+
+  function switchContact(id) {
+    if (!Contacts.setActive(id)) return;
+    const c = Contacts.getActive();
+    CardDeck.loadFor(c.id);
+    activeCategory = CardDeck.ALL_CATEGORY;
+    chatCategory = CardDeck.ALL_CATEGORY;
+    saveCategory = CardDeck.DEFAULT_CATEGORY;
+    Chat.setContact(c.id);
+    renderContacts();
     renderCategorySelect();
     renderSaveCategorySelect();
     renderCards();
-    renderAvatarSettings();
-    fillProfileForm();
-    updateHomeClock();
+  }
 
-    Chat.setCardCategory(chatCategory);
+  function renderContacts() {
+    const list = Contacts.getAll();
+    const activeId = Contacts.getActiveId();
+
+    if (list.length === 0) {
+      els.contactList.innerHTML = "";
+      els.contactEmpty.hidden = false;
+      return;
+    }
+
+    els.contactEmpty.hidden = true;
+
+    els.contactList.innerHTML = list
+      .map((contact) => {
+        const dataUrl = contact.avatar || "";
+        const initial = (contact.name || "T").slice(0, 1);
+        const avatar = dataUrl
+          ? `<div class="avatar avatar--md" style="background-image:url('${dataUrl}')"></div>`
+          : `<div class="avatar avatar--md avatar--ta-default">${escapeHtml(initial)}</div>`;
+        const activeClass = contact.id === activeId ? " is-active" : "";
+
+        return `
+          <li class="contact-item${activeClass}">
+            <button type="button" class="contact-item__main" data-contact-open="${escapeAttr(contact.id)}">
+              ${avatar}
+              <span class="contact-item__name">${escapeHtml(contact.name)}</span>
+            </button>
+            <button type="button" class="small-btn small-btn--danger" data-contact-remove="${escapeAttr(contact.id)}">删除</button>
+          </li>
+        `;
+      })
+      .join("");
+  }
+
+  function onContactListClick(event) {
+    const openBtn = event.target.closest("[data-contact-open]");
+    if (openBtn) {
+      const id = openBtn.dataset.contactOpen;
+      switchContact(id);
+      Home.show("chat");
+      return;
+    }
+
+    const removeBtn = event.target.closest("[data-contact-remove]");
+    if (removeBtn) {
+      const id = removeBtn.dataset.contactRemove;
+      const contact = Contacts.get(id);
+      if (!contact) return;
+      if (!window.confirm(`确定删除联系人「${contact.name}」吗？\n聊天记录和字卡不会被删除，但会从列表移除。`)) return;
+
+      const result = Contacts.remove(id);
+      if (!result.ok) {
+        showContactFeedback(result.msg, true);
+        return;
+      }
+
+      if (Contacts.getActiveId() === id) {
+        const next = Contacts.getActive();
+        Chat.setContact(next.id);
+      }
+
+      renderContacts();
+      showContactFeedback("联系人已删除。");
+    }
+  }
+
+  function addContact() {
+    const name = els.newContactInput.value;
+    const result = Contacts.add(name);
+
+    if (!result.ok) {
+      showContactFeedback(result.msg, true);
+      return;
+    }
+
+    els.newContactInput.value = "";
+    switchContact(result.contact.id);
+    renderContacts();
+    showContactFeedback(`已添加联系人「${result.contact.name}」。`);
+  }
+
+  function showContactFeedback(message, isError) {
+    if (!els.contactFeedback) return;
+    els.contactFeedback.textContent = message;
+    els.contactFeedback.classList.toggle("is-error", Boolean(isError));
+    if (contactFeedbackTimer) clearTimeout(contactFeedbackTimer);
+    contactFeedbackTimer = window.setTimeout(() => {
+      els.contactFeedback.textContent = "";
+      els.contactFeedback.classList.remove("is-error");
+    }, 2600);
   }
 
   function showCardsView() {
+    CardDeck.loadFor(Contacts.getActiveId());
+    activeCategory = CardDeck.ALL_CATEGORY;
     Home.show("cards");
+  }
+
+  function refreshCardsView() {
+    CardDeck.loadFor(Contacts.getActiveId());
+    const c = currentContact();
+    if (els.cardsContactName) {
+      els.cardsContactName.textContent = c.name || "TA";
+    }
     renderCategorySelect();
     renderSaveCategorySelect();
     renderCards();
@@ -198,15 +294,14 @@ const Settings = (() => {
 
   function showSettingsView() {
     Home.show("settings");
+  }
+
+  function refreshSettingsView() {
     renderAvatarSettings();
     fillProfileForm();
     if (els.customCssInput) {
       els.customCssInput.value = CustomCssStore.get();
     }
-  }
-
-  function showChatView() {
-    Home.show("chat");
   }
 
   function updateHomeClock() {
@@ -239,14 +334,10 @@ const Settings = (() => {
   function toggleTheme() {
     const next = ThemeStore.toggle();
     updateThemeButton();
-
     if (!els.themeFeedback) return;
-
     els.themeFeedback.textContent =
       next === ThemeStore.DARK ? "已切换到夜间模式。" : "已切换到日间模式。";
-
     if (themeFeedbackTimer) clearTimeout(themeFeedbackTimer);
-
     themeFeedbackTimer = window.setTimeout(() => {
       els.themeFeedback.textContent = "";
     }, 2200);
@@ -255,39 +346,26 @@ const Settings = (() => {
   function onBubbleStyleChange() {
     const next = els.bubbleStyleSelect.value;
     BubbleStore.set(next);
-
     if (!els.bubbleFeedback) return;
-
     const labels = {
       default: "微信经典",
       rounded: "大圆角",
       minimal: "极简无箭头",
       soft: "柔和阴影"
     };
-
     els.bubbleFeedback.textContent = `已切换为「${labels[next] || next}」。`;
-
     if (bubbleFeedbackTimer) clearTimeout(bubbleFeedbackTimer);
-
     bubbleFeedbackTimer = window.setTimeout(() => {
       els.bubbleFeedback.textContent = "";
     }, 2200);
   }
 
   function applyCustomCss() {
-    const value = els.customCssInput.value;
-    const ok = CustomCssStore.set(value);
-
+    const ok = CustomCssStore.set(els.customCssInput.value);
     if (!els.customCssFeedback) return;
-
-    els.customCssFeedback.textContent = ok
-      ? "已应用，聊天页立即生效。"
-      : "保存失败，可能是存储空间不足。";
-
+    els.customCssFeedback.textContent = ok ? "已应用，聊天页立即生效。" : "保存失败，可能是存储空间不足。";
     els.customCssFeedback.classList.toggle("is-error", !ok);
-
     if (customCssFeedbackTimer) clearTimeout(customCssFeedbackTimer);
-
     customCssFeedbackTimer = window.setTimeout(() => {
       els.customCssFeedback.textContent = "";
       els.customCssFeedback.classList.remove("is-error");
@@ -297,14 +375,10 @@ const Settings = (() => {
   function clearCustomCss() {
     CustomCssStore.clear();
     els.customCssInput.value = "";
-
     if (!els.customCssFeedback) return;
-
     els.customCssFeedback.textContent = "已清空自定义 CSS。";
     els.customCssFeedback.classList.remove("is-error");
-
     if (customCssFeedbackTimer) clearTimeout(customCssFeedbackTimer);
-
     customCssFeedbackTimer = window.setTimeout(() => {
       els.customCssFeedback.textContent = "";
     }, 2600);
@@ -350,21 +424,32 @@ const Settings = (() => {
   }
 
   function renderSaveCategorySelect() {
-    if (!els.saveCategorySelect) return;
-
     const categories = CardDeck.getCategories();
-
     if (!categories.includes(saveCategory)) {
       saveCategory = CardDeck.DEFAULT_CATEGORY;
     }
-
     els.saveCategorySelect.innerHTML = categories
-      .map(
-        (cat) => `<option value="${escapeAttr(cat)}">${escapeHtml(cat)}</option>`
-      )
+      .map((cat) => `<option value="${escapeAttr(cat)}">${escapeHtml(cat)}</option>`)
       .join("");
-
     els.saveCategorySelect.value = saveCategory;
+  }
+
+  function onChatCategoryChange() {
+    chatCategory = els.categorySelect.value;
+    els.categorySelect.blur();
+    Chat.setCardCategory(chatCategory);
+    showCardFeedback(
+      chatCategory === CardDeck.ALL_CATEGORY
+        ? "聊天将从全部分类里抽取。"
+        : `聊天只从「${chatCategory}」里抽取。`
+    );
+  }
+
+  function onCategoryTabClick(event) {
+    const button = event.target.closest("[data-category]");
+    if (!button) return;
+    activeCategory = button.dataset.category;
+    renderCards();
   }
 
   function renderCards() {
@@ -389,10 +474,6 @@ const Settings = (() => {
         return `<button type="button" class="category-tab${active}" data-category="${escapeAttr(tab.key)}">${escapeHtml(tab.label)}<span class="category-tab__count">${count}</span></button>`;
       })
       .join("");
-
-    if (els.cardCount) {
-      els.cardCount.textContent = String(CardDeck.getAll().length);
-    }
 
     const list = CardDeck.getByCategory(activeCategory);
 
@@ -437,7 +518,6 @@ const Settings = (() => {
       editCard(editBtn.dataset.editCategory, editBtn.dataset.editText);
       return;
     }
-
     const removeBtn = event.target.closest("[data-remove-text]");
     if (removeBtn) {
       removeCard(removeBtn.dataset.removeCategory, removeBtn.dataset.removeText);
@@ -452,7 +532,6 @@ const Settings = (() => {
 
   function editCard(category, text) {
     const index = findCardIndex(category, text);
-
     if (index < 0) {
       showCardFeedback("找不到这张字卡，可能已经被删除。", true);
       return;
@@ -460,7 +539,6 @@ const Settings = (() => {
 
     const nextText = window.prompt("修改字卡内容：", text);
     if (nextText === null) return;
-
     const trimmed = nextText.trim();
     if (!trimmed) {
       showCardFeedback("字卡内容不能为空。", true);
@@ -472,13 +550,11 @@ const Settings = (() => {
       `修改分类（留空保持「${category}」）：\n可选：${categoryList.join(" / ")}`,
       category
     );
-
     if (nextCategory === null) return;
 
-    const targetCategory = nextCategory.trim() || category;
     const result = CardDeck.updateAt(index, {
       text: trimmed,
-      category: targetCategory
+      category: nextCategory.trim() || category
     });
 
     if (!result.ok) {
@@ -494,19 +570,15 @@ const Settings = (() => {
 
   function removeCard(category, text) {
     const index = findCardIndex(category, text);
-
     if (index < 0) {
       showCardFeedback("找不到这张字卡，可能已经被删除。", true);
       return;
     }
-
     if (!window.confirm(`确定删除这张字卡吗？\n\n「${text}」`)) return;
-
     if (!CardDeck.removeAt(index)) {
       showCardFeedback("删除失败，请重试。", true);
       return;
     }
-
     renderCategorySelect();
     renderSaveCategorySelect();
     renderCards();
@@ -515,18 +587,13 @@ const Settings = (() => {
 
   function saveCards() {
     const raw = els.newCardInput.value;
-
     if (!raw.trim()) {
       showCardFeedback("字卡内容不能为空。", true);
       els.newCardInput.focus();
       return;
     }
 
-    const lines = raw
-      .split(/\r?\n/)
-      .map((line) => line.trim())
-      .filter(Boolean);
-
+    const lines = raw.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
     if (lines.length === 0) {
       showCardFeedback("没有找到有效字卡。", true);
       return;
@@ -546,13 +613,13 @@ const Settings = (() => {
     renderCards();
 
     const skipped = lines.length - result.added;
-
     if (lines.length === 1) {
-      if (result.added === 1) {
-        showCardFeedback(`已保存到「${targetCategory}」。`);
-      } else {
-        showCardFeedback(`「${targetCategory}」里已经有这张字卡了。`, true);
-      }
+      showCardFeedback(
+        result.added === 1
+          ? `已保存到「${targetCategory}」。`
+          : `「${targetCategory}」里已经有这张字卡了。`,
+        result.added !== 1
+      );
     } else {
       const parts = [`已添加 ${result.added} 张到「${targetCategory}」`];
       if (skipped > 0) parts.push(`跳过 ${skipped} 张重复`);
@@ -565,14 +632,12 @@ const Settings = (() => {
 
   function addCategory() {
     const name = els.newCategoryInput.value.trim();
-
     if (!name) {
       showCardFeedback("分类名不能为空。", true);
       return;
     }
 
     const result = CardDeck.addCategory(name);
-
     if (!result.ok) {
       showCardFeedback(result.msg, true);
       return;
@@ -583,50 +648,64 @@ const Settings = (() => {
     renderCategorySelect();
     renderSaveCategorySelect();
     renderCards();
-    showCardFeedback(`已创建分类「${result.category}」，新增字卡默认保存到该分类。`);
+    showCardFeedback(`已创建分类「${result.category}」。`);
   }
 
   function fillProfileForm() {
     const profile = ProfileStore.get();
-    if (els.inputTaName) els.inputTaName.value = profile.taName || "";
+    const contact = currentContact();
+    if (els.inputTaName) els.inputTaName.value = contact.name || "";
     if (els.inputUserName) els.inputUserName.value = profile.userName || "";
-    if (els.inputTaCall) els.inputTaCall.value = profile.taCall || "";
-    if (els.inputUserCall) els.inputUserCall.value = profile.userCall || "";
+    if (els.inputTaCall) els.inputTaCall.value = contact.taCall || "";
+    if (els.inputUserCall) els.inputUserCall.value = contact.userCall || "";
   }
 
   function saveProfile() {
-    const ok = ProfileStore.update({
-      taName: els.inputTaName.value,
+    const profileOk = ProfileStore.update({
       userName: els.inputUserName.value,
-      taCall: els.inputTaCall.value,
       userCall: els.inputUserCall.value
     });
 
-    if (!ok) {
+    if (!profileOk) {
       showProfileFeedback("保存失败，可能是存储空间不足。", true);
+      return;
+    }
+
+    const contact = currentContact();
+    const contactOk = Contacts.update(contact.id, {
+      name: els.inputTaName.value,
+      taCall: els.inputTaCall.value
+    });
+
+    if (!contactOk.ok) {
+      showProfileFeedback(contactOk.msg, true);
       return;
     }
 
     fillProfileForm();
     Chat.refreshAppearance();
+    renderContacts();
     showProfileFeedback("设置已保存。");
   }
 
   function renderAvatarPreview(el, role) {
     if (!el) return;
-    const dataUrl = AvatarStore.get(role);
-    const profile = ProfileStore.get();
-    const name =
-      role === "user"
-        ? profile.userName || window.APP_CONFIG.userName || "我"
-        : profile.taName || window.APP_CONFIG.taName || "TA";
 
-    el.classList.toggle(
-      role === "user" ? "avatar--user-default" : "avatar--ta-default",
-      !dataUrl
-    );
+    if (role === "user") {
+      const dataUrl = AvatarStore.get("user");
+      const profile = ProfileStore.get();
+      const name = profile.userName || window.APP_CONFIG.userName || "我";
+      el.classList.toggle("avatar--user-default", !dataUrl);
+      el.style.backgroundImage = dataUrl ? `url('${dataUrl}')` : "";
+      el.textContent = dataUrl ? "" : name.slice(0, 1);
+      return;
+    }
+
+    const contact = currentContact();
+    const dataUrl = contact.avatar || "";
+    el.classList.toggle("avatar--ta-default", !dataUrl);
     el.style.backgroundImage = dataUrl ? `url('${dataUrl}')` : "";
-    el.textContent = dataUrl ? "" : name.slice(0, 1);
+    el.textContent = dataUrl ? "" : (contact.name || "TA").slice(0, 1);
   }
 
   function renderAvatarSettings() {
@@ -638,9 +717,7 @@ const Settings = (() => {
     if (!file) return;
     if (!file.type.startsWith("image/")) return onError("请选择图片文件。");
     if (file.size > maxSize) {
-      return onError(
-        `图片太大，请选择 ${Math.floor(maxSize / 1024 / 1024)}MB 以内的图片。`
-      );
+      return onError(`图片太大，请选择 ${Math.floor(maxSize / 1024 / 1024)}MB 以内的图片。`);
     }
     const reader = new FileReader();
     reader.onload = () => onSuccess(String(reader.result || ""));
@@ -657,16 +734,41 @@ const Settings = (() => {
       file,
       2 * 1024 * 1024,
       (dataUrl) => {
-        if (!AvatarStore.set(role, dataUrl)) {
-          showProfileFeedback("保存失败，可能是存储空间不足。", true);
-          return;
+        if (role === "user") {
+          if (!AvatarStore.set("user", dataUrl)) {
+            showProfileFeedback("保存失败，可能是存储空间不足。", true);
+            return;
+          }
+        } else {
+          const contact = currentContact();
+          const result = Contacts.update(contact.id, { avatar: dataUrl });
+          if (!result.ok) {
+            showProfileFeedback(result.msg, true);
+            return;
+          }
         }
+
         renderAvatarSettings();
+        renderContacts();
         Chat.refreshAppearance();
-        showProfileFeedback(role === "ta" ? "TA 的头像已更新。" : "你的头像已更新。");
+        showProfileFeedback(role === "ta" ? "联系人头像已更新。" : "你的头像已更新。");
       },
       (message) => showProfileFeedback(message, true)
     );
+  }
+
+  function clearAvatar(role) {
+    if (role === "user") {
+      AvatarStore.clear("user");
+    } else {
+      const contact = currentContact();
+      Contacts.update(contact.id, { avatar: "" });
+    }
+
+    renderAvatarSettings();
+    renderContacts();
+    Chat.refreshAppearance();
+    showProfileFeedback("已恢复默认头像。");
   }
 
   function onBackgroundPicked() {
