@@ -2,6 +2,7 @@ const Settings = (() => {
   let els = {};
   let feedbackTimer = null;
   let currentView = "chat";
+  let pickingRole = null;
 
   function init() {
     els.viewChat = document.getElementById("view-chat");
@@ -17,6 +18,10 @@ const Settings = (() => {
     els.cardList = document.getElementById("card-list");
     els.cardEmpty = document.getElementById("card-empty");
 
+    els.settingsTaAvatar = document.getElementById("settings-ta-avatar");
+    els.settingsUserAvatar = document.getElementById("settings-user-avatar");
+    els.fileInput = document.getElementById("avatar-file-input");
+
     els.openCardsBtn.addEventListener("click", showCardsView);
     els.backBtn.addEventListener("click", showChatView);
     els.saveCardBtn.addEventListener("click", saveCard);
@@ -28,7 +33,28 @@ const Settings = (() => {
       }
     });
 
+    els.fileInput.addEventListener("change", onFilePicked);
+
+    document.querySelectorAll("[data-pick-avatar]").forEach((button) => {
+      button.addEventListener("click", () => {
+        pickingRole = button.dataset.pickAvatar;
+        els.fileInput.value = "";
+        els.fileInput.click();
+      });
+    });
+
+    document.querySelectorAll("[data-clear-avatar]").forEach((button) => {
+      button.addEventListener("click", () => {
+        const role = button.dataset.clearAvatar;
+        AvatarStore.clear(role);
+        renderAvatarSettings();
+        Chat.refreshAvatars();
+        showFeedback("已恢复默认头像。");
+      });
+    });
+
     renderCards();
+    renderAvatarSettings();
   }
 
   function showCardsView() {
@@ -36,6 +62,7 @@ const Settings = (() => {
     els.viewChat.hidden = true;
     els.viewCards.hidden = false;
     renderCards();
+    renderAvatarSettings();
     window.setTimeout(() => els.newCardInput.focus(), 50);
   }
 
@@ -104,6 +131,66 @@ const Settings = (() => {
     renderCards();
     showFeedback("已保存。这张字卡会出现在聊天回复里。");
     els.newCardInput.focus();
+  }
+
+  function renderAvatarPreview(el, role) {
+    if (!el) return;
+
+    const dataUrl = AvatarStore.get(role);
+    const initial =
+      role === "user"
+        ? (window.APP_CONFIG.userName || "我").slice(0, 1)
+        : (window.APP_CONFIG.taName || "TA").slice(0, 1);
+
+    el.classList.toggle(
+      role === "user" ? "avatar--user-default" : "avatar--ta-default",
+      !dataUrl
+    );
+    el.style.backgroundImage = dataUrl ? `url('${dataUrl}')` : "";
+    el.textContent = dataUrl ? "" : initial;
+  }
+
+  function renderAvatarSettings() {
+    renderAvatarPreview(els.settingsTaAvatar, "ta");
+    renderAvatarPreview(els.settingsUserAvatar, "user");
+  }
+
+  function onFilePicked() {
+    const file = els.fileInput.files && els.fileInput.files[0];
+    const role = pickingRole;
+
+    if (!file || !role) return;
+
+    if (!file.type.startsWith("image/")) {
+      showFeedback("请选择图片文件。", true);
+      return;
+    }
+
+    if (file.size > 2 * 1024 * 1024) {
+      showFeedback("图片太大，请选择 2MB 以内的图片。", true);
+      return;
+    }
+
+    const reader = new FileReader();
+
+    reader.onload = () => {
+      const dataUrl = String(reader.result || "");
+
+      if (!AvatarStore.set(role, dataUrl)) {
+        showFeedback("保存失败，可能是存储空间不足。", true);
+        return;
+      }
+
+      renderAvatarSettings();
+      Chat.refreshAvatars();
+      showFeedback(role === "ta" ? "TA 的头像已更新。" : "你的头像已更新。");
+    };
+
+    reader.onerror = () => {
+      showFeedback("读取图片失败，请重试。", true);
+    };
+
+    reader.readAsDataURL(file);
   }
 
   return {
