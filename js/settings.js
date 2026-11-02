@@ -11,6 +11,7 @@ const Settings = (() => {
   let activeCategory = CardDeck.ALL_CATEGORY;
   let chatCategory = CardDeck.ALL_CATEGORY;
   let saveCategory = CardDeck.DEFAULT_CATEGORY;
+  let editingContactId = null;
 
   function init() {
     els.viewHome = document.getElementById("view-home");
@@ -38,6 +39,7 @@ const Settings = (() => {
     els.openCardsBtn2 = document.getElementById("open-cards-page-2");
     els.openSettingsBtn = document.getElementById("open-settings-page");
 
+    els.cardsOwnerSelect = document.getElementById("cards-owner-select");
     els.cardsContactName = document.getElementById("cards-contact-name");
     els.categorySelect = document.getElementById("card-category-select");
     els.saveCategorySelect = document.getElementById("save-category-select");
@@ -162,6 +164,9 @@ const Settings = (() => {
         els.saveCategorySelect.blur();
       });
     }
+    if (els.cardsOwnerSelect) {
+      els.cardsOwnerSelect.addEventListener("change", onCardsOwnerChange);
+    }
 
     if (els.themeToggle) {
       els.themeToggle.addEventListener("click", toggleTheme);
@@ -233,6 +238,14 @@ const Settings = (() => {
     return Contacts.getActive();
   }
 
+  function editingContact() {
+    if (editingContactId) {
+      const found = Contacts.get(editingContactId);
+      if (found) return found;
+    }
+    return currentContact();
+  }
+
   function switchContact(id) {
     if (!Contacts.setActive(id)) return;
     const c = Contacts.getActive();
@@ -240,11 +253,47 @@ const Settings = (() => {
     activeCategory = CardDeck.ALL_CATEGORY;
     chatCategory = CardDeck.ALL_CATEGORY;
     saveCategory = CardDeck.DEFAULT_CATEGORY;
+    editingContactId = c.id;
     Chat.setContact(c.id);
     renderContacts();
     renderCategorySelect();
     renderSaveCategorySelect();
     renderCards();
+  }
+
+  function onCardsOwnerChange() {
+    const id = els.cardsOwnerSelect.value;
+    if (!Contacts.get(id)) return;
+
+    editingContactId = id;
+    CardDeck.loadFor(id);
+    activeCategory = CardDeck.ALL_CATEGORY;
+    chatCategory = CardDeck.ALL_CATEGORY;
+    saveCategory = CardDeck.DEFAULT_CATEGORY;
+    renderCategorySelect();
+    renderSaveCategorySelect();
+    renderCards();
+  }
+
+  function renderCardsOwnerSelect() {
+    if (!els.cardsOwnerSelect) return;
+
+    const contacts = Contacts.getAll();
+    const target = editingContact();
+
+    els.cardsOwnerSelect.innerHTML = contacts
+      .map(
+        (contact) =>
+          `<option value="${escapeAttr(contact.id)}">${escapeHtml(contact.name)}</option>`
+      )
+      .join("");
+
+    els.cardsOwnerSelect.value = target.id;
+    editingContactId = target.id;
+
+    if (els.cardsContactName) {
+      els.cardsContactName.textContent = target.name || "TA";
+    }
   }
 
   function renderContacts() {
@@ -308,6 +357,10 @@ const Settings = (() => {
         Chat.setContact(next.id);
       }
 
+      if (editingContactId === id) {
+        editingContactId = Contacts.getActiveId();
+      }
+
       renderContacts();
       showContactFeedback("好友已删除。");
     }
@@ -340,17 +393,18 @@ const Settings = (() => {
   }
 
   function showCardsView() {
-    CardDeck.loadFor(Contacts.getActiveId());
+    editingContactId = Contacts.getActiveId();
+    CardDeck.loadFor(editingContactId);
     activeCategory = CardDeck.ALL_CATEGORY;
     Home.show("cards");
   }
 
   function refreshCardsView() {
-    CardDeck.loadFor(Contacts.getActiveId());
-    const c = currentContact();
-    if (els.cardsContactName) {
-      els.cardsContactName.textContent = c.name || "TA";
+    if (!editingContactId || !Contacts.get(editingContactId)) {
+      editingContactId = Contacts.getActiveId();
     }
+    CardDeck.loadFor(editingContactId);
+    renderCardsOwnerSelect();
     renderCategorySelect();
     renderSaveCategorySelect();
     renderCards();
@@ -501,7 +555,12 @@ const Settings = (() => {
   function onChatCategoryChange() {
     chatCategory = els.categorySelect.value;
     els.categorySelect.blur();
-    Chat.setCardCategory(chatCategory);
+
+    const target = editingContact();
+    if (target && target.id === Contacts.getActiveId()) {
+      Chat.setCardCategory(chatCategory);
+    }
+
     showCardFeedback(
       chatCategory === CardDeck.ALL_CATEGORY
         ? "聊天将从全部分类里抽取。"
