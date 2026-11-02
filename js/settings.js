@@ -423,22 +423,24 @@ const Settings = (() => {
 
   function addCategory() {
     const name = els.newCategoryInput.value.trim();
+
     if (!name) {
       showCardFeedback("分类名不能为空。", true);
       return;
     }
 
-    const exists = CardDeck.getCategories().includes(name);
-    if (exists) {
-      showCardFeedback("这个分类已经存在。", true);
+    const result = CardDeck.addCategory(name);
+
+    if (!result.ok) {
+      showCardFeedback(result.msg, true);
       return;
     }
 
-    activeCategory = name;
+    activeCategory = result.category;
     els.newCategoryInput.value = "";
     renderCategorySelect();
     renderCards();
-    showCardFeedback(`已切换到新分类「${name}」，现在添加的字卡会放进去。`);
+    showCardFeedback(`已创建分类「${result.category}」，现在添加的字卡会放进去。`);
   }
 
   function fillProfileForm() {
