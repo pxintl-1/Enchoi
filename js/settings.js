@@ -103,6 +103,8 @@ const Settings = (() => {
       renderCards();
     });
 
+    els.cardList.addEventListener("click", onCardListClick);
+
     if (els.themeToggle) {
       els.themeToggle.addEventListener("click", toggleTheme);
     }
@@ -368,8 +370,14 @@ const Settings = (() => {
       .map(
         (card) => `
           <li>
-            <span class="card-list__category">${escapeHtml(card.category)}</span>
-            <span class="card-list__text">${escapeHtml(card.text)}</span>
+            <div class="card-list__main">
+              <span class="card-list__category">${escapeHtml(card.category)}</span>
+              <span class="card-list__text">${escapeHtml(card.text)}</span>
+            </div>
+            <div class="card-list__actions">
+              <button type="button" class="small-btn" data-edit-category="${escapeAttr(card.category)}" data-edit-text="${escapeAttr(card.text)}">编辑</button>
+              <button type="button" class="small-btn small-btn--danger" data-remove-category="${escapeAttr(card.category)}" data-remove-text="${escapeAttr(card.text)}">删除</button>
+            </div>
           </li>
         `
       )
@@ -384,6 +392,88 @@ const Settings = (() => {
 
   function escapeAttr(text) {
     return escapeHtml(text).replace(/"/g, "&quot;");
+  }
+
+  function onCardListClick(event) {
+    const editBtn = event.target.closest("[data-edit-text]");
+    if (editBtn) {
+      editCard(editBtn.dataset.editCategory, editBtn.dataset.editText);
+      return;
+    }
+
+    const removeBtn = event.target.closest("[data-remove-text]");
+    if (removeBtn) {
+      removeCard(removeBtn.dataset.removeCategory, removeBtn.dataset.removeText);
+    }
+  }
+
+  function findCardIndex(category, text) {
+    return CardDeck.getAll().findIndex(
+      (card) => card.category === category && card.text === text
+    );
+  }
+
+  function editCard(category, text) {
+    const index = findCardIndex(category, text);
+
+    if (index < 0) {
+      showCardFeedback("找不到这张字卡，可能已经被删除。", true);
+      return;
+    }
+
+    const nextText = window.prompt("修改字卡内容：", text);
+    if (nextText === null) return;
+
+    const trimmed = nextText.trim();
+    if (!trimmed) {
+      showCardFeedback("字卡内容不能为空。", true);
+      return;
+    }
+
+    const categoryList = CardDeck.getCategories();
+    const nextCategory = window.prompt(
+      `修改分类（留空保持「${category}」）：\n可选：${categoryList.join(" / ")}`,
+      category
+    );
+
+    if (nextCategory === null) return;
+
+    const targetCategory = nextCategory.trim() || category;
+    const result = CardDeck.updateAt(index, {
+      text: trimmed,
+      category: targetCategory
+    });
+
+    if (!result.ok) {
+      showCardFeedback(result.msg, true);
+      return;
+    }
+
+    renderCategorySelect();
+    renderSaveCategorySelect();
+    renderCards();
+    showCardFeedback(`已更新为「${result.category}」下的字卡。`);
+  }
+
+  function removeCard(category, text) {
+    const index = findCardIndex(category, text);
+
+    if (index < 0) {
+      showCardFeedback("找不到这张字卡，可能已经被删除。", true);
+      return;
+    }
+
+    if (!window.confirm(`确定删除这张字卡吗？\n\n「${text}」`)) return;
+
+    if (!CardDeck.removeAt(index)) {
+      showCardFeedback("删除失败，请重试。", true);
+      return;
+    }
+
+    renderCategorySelect();
+    renderSaveCategorySelect();
+    renderCards();
+    showCardFeedback("字卡已删除。");
   }
 
   function saveCards() {
