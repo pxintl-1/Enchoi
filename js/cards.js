@@ -1,47 +1,11 @@
 const CardDeck = (() => {
   const DEFAULT_CATEGORY = "默认";
   const ALL_CATEGORY = "__all__";
-  const CATEGORY_KEY = "private_chat_categories_v1";
 
-  const storedCards = Storage.getCards();
-  let cards = normalizeStored(storedCards);
-
-  if (!Array.isArray(storedCards) || needsMigration(storedCards)) {
-    Storage.saveCards(cards);
-  }
-
-  let categories = loadCategories();
-
-  if (categories.length === 0) {
-    categories = [DEFAULT_CATEGORY];
-    saveCategories();
-  }
-
+  let contactId = null;
+  let cards = [];
+  let categories = [DEFAULT_CATEGORY];
   let lastKey = "";
-
-  function loadCategories() {
-    try {
-      const raw = localStorage.getItem(CATEGORY_KEY);
-      if (!raw) return [];
-      const parsed = JSON.parse(raw);
-      if (!Array.isArray(parsed)) return [];
-      return parsed
-        .map((item) => String(item == null ? "" : item).trim())
-        .filter(Boolean);
-    } catch (error) {
-      return [];
-    }
-  }
-
-  function saveCategories() {
-    try {
-      localStorage.setItem(CATEGORY_KEY, JSON.stringify(categories));
-      return true;
-    } catch (error) {
-      console.warn("分类保存失败", error);
-      return false;
-    }
-  }
 
   function normalizeStored(value) {
     if (!Array.isArray(value)) {
@@ -70,13 +34,40 @@ const CardDeck = (() => {
       .filter(Boolean);
   }
 
-  function needsMigration(value) {
-    if (!Array.isArray(value)) return true;
-    return value.some((item) => typeof item === "string");
+  function loadFor(id) {
+    contactId = id;
+    lastKey = "";
+
+    const storedCards = Storage.getCards(id);
+    const needsMigration =
+      !Array.isArray(storedCards) ||
+      storedCards.some((item) => typeof item === "string");
+
+    cards = normalizeStored(storedCards);
+
+    if (needsMigration) {
+      Storage.saveCards(id, cards);
+    }
+
+    const storedCategories = Storage.getCategories(id);
+    categories = Array.isArray(storedCategories)
+      ? storedCategories
+          .map((item) => String(item == null ? "" : item).trim())
+          .filter(Boolean)
+      : [];
+
+    if (categories.length === 0) {
+      categories = [DEFAULT_CATEGORY];
+      Storage.saveCategories(id, categories);
+    }
   }
 
   function persist() {
-    return Storage.saveCards(cards);
+    return Storage.saveCards(contactId, cards);
+  }
+
+  function persistCategories() {
+    return Storage.saveCategories(contactId, categories);
   }
 
   function normalizeText(text) {
@@ -92,7 +83,7 @@ const CardDeck = (() => {
     const value = normalizeCategory(name);
     if (!categories.includes(value)) {
       categories.push(value);
-      saveCategories();
+      persistCategories();
     }
     return value;
   }
@@ -111,7 +102,7 @@ const CardDeck = (() => {
       return { ok: false, msg: "这个分类已经存在。" };
     }
     categories.push(value);
-    saveCategories();
+    persistCategories();
     return { ok: true, category: value };
   }
 
@@ -155,9 +146,7 @@ const CardDeck = (() => {
     const value = normalizeText(text);
     const cat = ensureCategory(category);
 
-    if (!value) {
-      return { ok: false, msg: "不能添加空字卡。" };
-    }
+    if (!value) return { ok: false, msg: "不能添加空字卡。" };
 
     if (cards.some((card) => card.text === value && card.category === cat)) {
       return { ok: false, msg: "这个分类下已经有同一张字卡了。" };
@@ -190,9 +179,7 @@ const CardDeck = (() => {
         ? ensureCategory(patch.category)
         : current.category;
 
-    if (!nextText) {
-      return { ok: false, msg: "字卡内容不能为空。" };
-    }
+    if (!nextText) return { ok: false, msg: "字卡内容不能为空。" };
 
     const duplicated = cards.some(
       (card, i) =>
@@ -230,9 +217,7 @@ const CardDeck = (() => {
     const cat = ensureCategory(category);
     const valid = list.map(normalizeText).filter(Boolean);
 
-    if (valid.length === 0) {
-      return { ok: false, msg: "没有找到有效字卡。" };
-    }
+    if (valid.length === 0) return { ok: false, msg: "没有找到有效字卡。" };
 
     const before = cards.length;
     const existing = new Set(cards.map((card) => card.category + "::" + card.text));
@@ -257,6 +242,7 @@ const CardDeck = (() => {
   return {
     DEFAULT_CATEGORY,
     ALL_CATEGORY,
+    loadFor,
     draw,
     add,
     removeAt,
