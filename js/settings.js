@@ -9,6 +9,7 @@ const Settings = (() => {
 
   let activeCategory = CardDeck.ALL_CATEGORY;
   let chatCategory = CardDeck.ALL_CATEGORY;
+  let saveCategory = CardDeck.DEFAULT_CATEGORY;
 
   function init() {
     els.viewChat = document.getElementById("view-chat");
@@ -22,6 +23,7 @@ const Settings = (() => {
 
     els.cardCount = document.getElementById("card-count");
     els.categorySelect = document.getElementById("card-category-select");
+    els.saveCategorySelect = document.getElementById("save-category-select");
     els.newCardInput = document.getElementById("new-card-input");
     els.saveCardBtn = document.getElementById("save-card-btn");
     els.cardFeedback = document.getElementById("card-feedback");
@@ -30,7 +32,6 @@ const Settings = (() => {
     els.categoryTabs = document.getElementById("category-tabs");
     els.newCategoryInput = document.getElementById("new-category-input");
     els.addCategoryBtn = document.getElementById("add-category-btn");
-    els.targetCategoryLabel = document.getElementById("target-category-label");
 
     els.inputTaName = document.getElementById("input-ta-name");
     els.inputUserName = document.getElementById("input-user-name");
@@ -69,6 +70,11 @@ const Settings = (() => {
         event.preventDefault();
         saveCards();
       }
+    });
+
+    els.saveCategorySelect.addEventListener("change", () => {
+      saveCategory = els.saveCategorySelect.value || CardDeck.DEFAULT_CATEGORY;
+      els.saveCategorySelect.blur();
     });
 
     els.addCategoryBtn.addEventListener("click", addCategory);
@@ -153,6 +159,7 @@ const Settings = (() => {
 
     updateThemeButton();
     renderCategorySelect();
+    renderSaveCategorySelect();
     renderCards();
     renderAvatarSettings();
     fillProfileForm();
@@ -169,6 +176,7 @@ const Settings = (() => {
   function showCardsView() {
     showView("cards");
     renderCategorySelect();
+    renderSaveCategorySelect();
     renderCards();
   }
 
@@ -304,15 +312,22 @@ const Settings = (() => {
     chatCategory = els.categorySelect.value;
   }
 
-  function currentTargetCategory() {
-    return activeCategory === CardDeck.ALL_CATEGORY
-      ? CardDeck.DEFAULT_CATEGORY
-      : activeCategory;
-  }
+  function renderSaveCategorySelect() {
+    if (!els.saveCategorySelect) return;
 
-  function updateTargetCategoryLabel() {
-    if (!els.targetCategoryLabel) return;
-    els.targetCategoryLabel.textContent = currentTargetCategory();
+    const categories = CardDeck.getCategories();
+
+    if (!categories.includes(saveCategory)) {
+      saveCategory = CardDeck.DEFAULT_CATEGORY;
+    }
+
+    els.saveCategorySelect.innerHTML = categories
+      .map(
+        (cat) => `<option value="${escapeAttr(cat)}">${escapeHtml(cat)}</option>`
+      )
+      .join("");
+
+    els.saveCategorySelect.value = saveCategory;
   }
 
   function renderCards() {
@@ -339,7 +354,6 @@ const Settings = (() => {
       .join("");
 
     els.cardCount.textContent = String(CardDeck.getAll().length);
-    updateTargetCategoryLabel();
 
     const list = CardDeck.getByCategory(activeCategory);
 
@@ -391,8 +405,8 @@ const Settings = (() => {
       return;
     }
 
-    const category = currentTargetCategory();
-    const result = CardDeck.importFromArray(lines, category);
+    const targetCategory = saveCategory || CardDeck.DEFAULT_CATEGORY;
+    const result = CardDeck.importFromArray(lines, targetCategory);
 
     if (!result.ok) {
       showCardFeedback(result.msg, true);
@@ -401,18 +415,19 @@ const Settings = (() => {
 
     els.newCardInput.value = "";
     renderCategorySelect();
+    renderSaveCategorySelect();
     renderCards();
 
     const skipped = lines.length - result.added;
 
     if (lines.length === 1) {
       if (result.added === 1) {
-        showCardFeedback(`已保存到「${category}」。`);
+        showCardFeedback(`已保存到「${targetCategory}」。`);
       } else {
-        showCardFeedback(`「${category}」里已经有这张字卡了。`, true);
+        showCardFeedback(`「${targetCategory}」里已经有这张字卡了。`, true);
       }
     } else {
-      const parts = [`已添加 ${result.added} 张到「${category}」`];
+      const parts = [`已添加 ${result.added} 张到「${targetCategory}」`];
       if (skipped > 0) parts.push(`跳过 ${skipped} 张重复`);
       parts.push(`当前共 ${result.total} 张`);
       showCardFeedback(parts.join("，") + "。");
@@ -436,11 +451,12 @@ const Settings = (() => {
       return;
     }
 
-    activeCategory = result.category;
+    saveCategory = result.category;
     els.newCategoryInput.value = "";
     renderCategorySelect();
+    renderSaveCategorySelect();
     renderCards();
-    showCardFeedback(`已创建分类「${result.category}」，现在添加的字卡会放进去。`);
+    showCardFeedback(`已创建分类「${result.category}」，新增字卡默认保存到该分类。`);
   }
 
   function fillProfileForm() {
