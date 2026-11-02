@@ -10,6 +10,8 @@ const Chat = (() => {
     els.list = document.getElementById("message-list");
     els.input = document.getElementById("message-input");
     els.send = document.getElementById("send-btn");
+    els.status = document.getElementById("typing-status");
+    els.headerTaAvatar = document.getElementById("header-ta-avatar");
 
     els.send.addEventListener("click", send);
 
@@ -21,12 +23,15 @@ const Chat = (() => {
     });
 
     els.input.addEventListener("input", resizeInput);
+
+    renderHeaderAvatar();
     render();
+    updateStatus();
   }
 
   function resizeInput() {
     els.input.style.height = "auto";
-    els.input.style.height = Math.min(els.input.scrollHeight, 120) + "px";
+    els.input.style.height = Math.min(els.input.scrollHeight, 110) + "px";
   }
 
   function formatTime(timestamp) {
@@ -43,23 +48,32 @@ const Chat = (() => {
     return div.innerHTML;
   }
 
-  function renderAvatar(role) {
-    const value =
-      role === "user"
-        ? window.APP_CONFIG.userAvatar
-        : window.APP_CONFIG.taAvatar;
+  function avatarStyle(dataUrl) {
+    return dataUrl ? `style="background-image:url('${dataUrl}')"` : "";
+  }
 
-    const safe = String(value || "").trim();
-
-    if (!safe) {
-      return `<div class="avatar">${role === "user" ? "我" : "TA"}</div>`;
+  function avatarInitial(role) {
+    if (role === "user") {
+      return (window.APP_CONFIG.userName || "我").slice(0, 1);
     }
+    return (window.APP_CONFIG.taName || "TA").slice(0, 1);
+  }
 
-    if (/^https?:\/\//i.test(safe) || safe.startsWith("./") || safe.startsWith("../")) {
-      return `<div class="avatar"><img src="${escapeHtml(safe)}" alt=""></div>`;
-    }
+  function renderAvatarHtml(role, sizeClass) {
+    const dataUrl = AvatarStore.get(role);
+    const initial = avatarInitial(role);
+    const defaultClass = role === "user" ? "avatar--user-default" : "avatar--ta-default";
+    const content = dataUrl ? "" : escapeHtml(initial);
 
-    return `<div class="avatar">${escapeHtml(safe)}</div>`;
+    return `<div class="avatar ${sizeClass} ${dataUrl ? "" : defaultClass}" ${avatarStyle(dataUrl)} aria-hidden="true">${content}</div>`;
+  }
+
+  function renderHeaderAvatar() {
+    if (!els.headerTaAvatar) return;
+    const dataUrl = AvatarStore.get("ta");
+    els.headerTaAvatar.classList.toggle("avatar--ta-default", !dataUrl);
+    els.headerTaAvatar.style.backgroundImage = dataUrl ? `url('${dataUrl}')` : "";
+    els.headerTaAvatar.textContent = dataUrl ? "" : avatarInitial("ta");
   }
 
   function render() {
@@ -67,16 +81,16 @@ const Chat = (() => {
 
     if (messages.length === 0) {
       els.list.innerHTML =
-        '<div class="empty-state">这里只有你和 TA。<br>发一条消息，等 TA 回你。</div>';
+        '<div class="empty-state">这里只有你和 TA。<br>发一条消息，看看 TA 会说什么。</div>';
       return;
     }
 
-    const html = messages
+    els.list.innerHTML = messages
       .map((message) => {
         const role = message.role === "user" ? "user" : "ta";
         return `
           <div class="message message--${role}">
-            ${renderAvatar(role)}
+            ${renderAvatarHtml(role, "avatar--md")}
             <div class="message__body">
               <div class="bubble">${escapeHtml(message.text)}</div>
               <div class="time">${formatTime(message.time)}</div>
@@ -86,19 +100,7 @@ const Chat = (() => {
       })
       .join("");
 
-    els.list.innerHTML = html + (replying ? renderTyping() : "");
     scrollToBottom();
-  }
-
-  function renderTyping() {
-    return `
-      <div class="message message--ta" id="typing-row">
-        ${renderAvatar("ta")}
-        <div class="message__body">
-          <div class="typing"><span></span><span></span><span></span></div>
-        </div>
-      </div>
-    `;
   }
 
   function scrollToBottom() {
@@ -108,10 +110,20 @@ const Chat = (() => {
   }
 
   function append(role, text) {
-    messages.push({ role, text, time: Date.now() });
+    messages.push({
+      role,
+      text,
+      time: Date.now()
+    });
+
     messages = messages.slice(-window.APP_CONFIG.maxHistory);
     Storage.saveHistory(messages);
     render();
+  }
+
+  function updateStatus() {
+    if (!els.status) return;
+    els.status.textContent = replying ? "正在输入…" : "在线";
   }
 
   function send() {
@@ -123,8 +135,8 @@ const Chat = (() => {
     append("user", text);
 
     replying = true;
+    updateStatus();
     els.send.disabled = true;
-    render();
 
     const delay =
       window.APP_CONFIG.replyDelayMin +
@@ -133,10 +145,12 @@ const Chat = (() => {
 
     replyTimer = window.setTimeout(() => {
       const reply = CardDeck.draw();
+      append("ta", reply);
+
       replying = false;
       replyTimer = null;
+      updateStatus();
       els.send.disabled = false;
-      append("ta", reply);
       els.input.focus();
     }, delay);
   }
@@ -151,6 +165,7 @@ const Chat = (() => {
     els.send.disabled = false;
     messages = [];
     Storage.clearHistory();
+    updateStatus();
     render();
   }
 
@@ -158,5 +173,15 @@ const Chat = (() => {
     return [...messages];
   }
 
-  return { init, clear, getHistory };
+  function refreshAvatars() {
+    renderHeaderAvatar();
+    render();
+  }
+
+  return {
+    init,
+    clear,
+    getHistory,
+    refreshAvatars
+  };
 })();
