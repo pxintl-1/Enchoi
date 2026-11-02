@@ -12,9 +12,13 @@ const Settings = (() => {
   let saveCategory = CardDeck.DEFAULT_CATEGORY;
 
   function init() {
+    els.viewHome = document.getElementById("view-home");
     els.viewChat = document.getElementById("view-chat");
     els.viewCards = document.getElementById("view-cards");
     els.viewSettings = document.getElementById("view-settings");
+
+    els.backHome = document.getElementById("back-home");
+    els.appChatDock = document.getElementById("app-chat-dock");
 
     els.openCardsBtn = document.getElementById("open-cards-page");
     els.openSettingsBtn = document.getElementById("open-settings-page");
@@ -58,6 +62,11 @@ const Settings = (() => {
     els.backgroundFileInput = document.getElementById("background-file-input");
     els.pickBackgroundBtn = document.getElementById("pick-background-btn");
     els.clearBackgroundBtn = document.getElementById("clear-background-btn");
+
+    Home.init();
+
+    els.backHome.addEventListener("click", () => Home.showHome());
+    els.appChatDock.addEventListener("click", () => Home.show("chat"));
 
     els.openCardsBtn.addEventListener("click", showCardsView);
     els.openSettingsBtn.addEventListener("click", showSettingsView);
@@ -165,25 +174,20 @@ const Settings = (() => {
     renderCards();
     renderAvatarSettings();
     fillProfileForm();
+    updateHomeClock();
 
     Chat.setCardCategory(chatCategory);
   }
 
-  function showView(target) {
-    els.viewChat.hidden = target !== "chat";
-    els.viewCards.hidden = target !== "cards";
-    els.viewSettings.hidden = target !== "settings";
-  }
-
   function showCardsView() {
-    showView("cards");
+    Home.show("cards");
     renderCategorySelect();
     renderSaveCategorySelect();
     renderCards();
   }
 
   function showSettingsView() {
-    showView("settings");
+    Home.show("settings");
     renderAvatarSettings();
     fillProfileForm();
     if (els.customCssInput) {
@@ -192,7 +196,28 @@ const Settings = (() => {
   }
 
   function showChatView() {
-    showView("chat");
+    Home.show("chat");
+  }
+
+  function updateHomeClock() {
+    const timeEl = document.getElementById("home-time");
+    const dateEl = document.getElementById("home-date");
+    if (!timeEl || !dateEl) return;
+
+    function tick() {
+      const now = new Date();
+      const hh = String(now.getHours()).padStart(2, "0");
+      const mm = String(now.getMinutes()).padStart(2, "0");
+      timeEl.textContent = `${hh}:${mm}`;
+      dateEl.textContent = now.toLocaleDateString("zh-CN", {
+        month: "long",
+        day: "numeric",
+        weekday: "long"
+      });
+    }
+
+    tick();
+    window.setInterval(tick, 30000);
   }
 
   function updateThemeButton() {
