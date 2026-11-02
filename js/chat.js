@@ -190,7 +190,6 @@ const Chat = (() => {
       replyTimer = null;
       updateStatus();
       els.send.disabled = false;
-      els.input.focus();
     }, delay);
   }
 
