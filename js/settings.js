@@ -129,7 +129,6 @@ const Settings = (() => {
     showView("cards");
     renderCategorySelect();
     renderCards();
-    window.setTimeout(() => els.newCardInput.focus(), 50);
   }
 
   function showSettingsView() {
