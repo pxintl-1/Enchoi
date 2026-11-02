@@ -126,8 +126,9 @@ const Chat = (() => {
     els.list.innerHTML = messages
       .map((message) => {
         const role = message.role === "user" ? "user" : "ta";
+        const side = role === "user" ? "outgoing" : "incoming";
         return `
-          <div class="message message--${role}">
+          <div class="message message--${role} ${side}">
             ${renderAvatarHtml(role, "avatar--md")}
             <div class="message__body">
               <div class="bubble">${escapeHtml(message.text)}</div>
