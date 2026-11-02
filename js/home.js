@@ -15,11 +15,9 @@ const Home = (() => {
     if (els.appChat) {
       els.appChat.addEventListener("click", () => show("contacts"));
     }
-
     if (els.appCards) {
       els.appCards.addEventListener("click", () => show("cards"));
     }
-
     if (els.appSettings) {
       els.appSettings.addEventListener("click", () => show("settings"));
     }
