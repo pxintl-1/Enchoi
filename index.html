@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#f3eee8">
+  <title>只对你可见</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="app">
+    <header class="chat-header">
+      <div>
+        <div class="chat-header__name" id="ta-name">TA</div>
+        <div class="chat-header__status" id="typing-status" aria-live="polite">在线</div>
+      </div>
+      <button id="open-settings" class="icon-btn" type="button">字卡</button>
+    </header>
+
+    <main id="message-list" class="message-list" aria-live="polite"></main>
+
+    <footer class="composer">
+      <textarea id="message-input" rows="1" placeholder="说点什么……"></textarea>
+      <button id="send-btn" class="send-btn" type="button">发送</button>
+    </footer>
+  </div>
+
+  <div id="settings-modal" class="modal" hidden>
+    <div class="modal__backdrop" data-close-settings></div>
+    <section class="modal__panel" role="dialog" aria-modal="true" aria-labelledby="settings-title">
+      <header class="modal__header">
+        <h2 id="settings-title">字卡与数据</h2>
+        <button class="icon-btn" type="button" data-close-settings>关闭</button>
+      </header>
+
+      <div class="modal__body">
+        <p class="hint">TA 的每一条回复，都会从下面的字卡中随机抽取。</p>
+        <div class="card-count">字卡库：<strong id="card-count">0</strong> 张</div>
+
+        <div class="row">
+          <input id="new-card-input" type="text" placeholder="输入一张新字卡……">
+          <button id="add-card-btn" type="button">添加</button>
+        </div>
+        <div id="settings-feedback" class="feedback"></div>
+
+        <div id="card-list" class="card-list"></div>
+
+        <h3>批量导入</h3>
+        <p class="hint">支持 JSON 字符串数组，或每行一条。已存在的会自动去重。</p>
+        <textarea id="import-input" rows="4" placeholder='["我在呢。","晚安。"]&#10;或每行一条'></textarea>
+        <button id="import-btn" type="button">导入字卡</button>
+
+        <h3>数据</h3>
+        <div class="button-row">
+          <button id="export-cards-btn" type="button">导出字卡 JSON</button>
+          <button id="export-history-btn" type="button">导出聊天记录 JSON</button>
+          <button id="clear-history-btn" class="danger" type="button">清空聊天记录</button>
+        </div>
+
+        <p class="hint">数据保存在当前浏览器 localStorage 中，不会自动同步到其他设备。请定期导出备份。</p>
+      </div>
+    </section>
+  </div>
+
+  <script src="js/config.js"></script>
+  <script src="js/storage.js"></script>
+  <script src="js/cards.js"></script>
+  <script src="js/chat.js"></script>
+  <script src="js/settings.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
