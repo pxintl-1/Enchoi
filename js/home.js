@@ -12,17 +12,25 @@ const Home = (() => {
     els.appCards = document.getElementById("app-cards");
     els.appSettings = document.getElementById("app-settings");
 
-    els.appChat.addEventListener("click", () => show("contacts"));
-    els.appCards.addEventListener("click", () => show("cards"));
-    els.appSettings.addEventListener("click", () => show("settings"));
+    if (els.appChat) {
+      els.appChat.addEventListener("click", () => show("contacts"));
+    }
+
+    if (els.appCards) {
+      els.appCards.addEventListener("click", () => show("cards"));
+    }
+
+    if (els.appSettings) {
+      els.appSettings.addEventListener("click", () => show("settings"));
+    }
   }
 
   function show(target) {
-    els.viewHome.hidden = target !== "home";
-    els.viewContacts.hidden = target !== "contacts";
-    els.viewChat.hidden = target !== "chat";
-    els.viewCards.hidden = target !== "cards";
-    els.viewSettings.hidden = target !== "settings";
+    if (els.viewHome) els.viewHome.hidden = target !== "home";
+    if (els.viewContacts) els.viewContacts.hidden = target !== "contacts";
+    if (els.viewChat) els.viewChat.hidden = target !== "chat";
+    if (els.viewCards) els.viewCards.hidden = target !== "cards";
+    if (els.viewSettings) els.viewSettings.hidden = target !== "settings";
 
     document.dispatchEvent(
       new CustomEvent("app:viewchange", { detail: { view: target } })
