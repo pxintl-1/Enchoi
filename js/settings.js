@@ -13,7 +13,8 @@ const Settings = (() => {
   let saveCategory = CardDeck.DEFAULT_CATEGORY;
   let editingContactId = null;
 
-  let cardsOrigin = "contacts";
+  // 进入来源："home" | "contacts" | "chat"
+  let cardsOrigin = "home";
   let settingsOrigin = "contacts";
 
   function init() {
@@ -96,7 +97,13 @@ const Settings = (() => {
     }
     if (els.cardsBack) {
       els.cardsBack.addEventListener("click", () => {
-        Home.show(cardsOrigin === "chat" ? "chat" : "contacts");
+        if (cardsOrigin === "chat") {
+          Home.show("chat");
+        } else if (cardsOrigin === "home") {
+          Home.showHome();
+        } else {
+          Home.show("contacts");
+        }
       });
     }
     if (els.cardsToHome) {
@@ -110,7 +117,11 @@ const Settings = (() => {
     }
     if (els.backToChat2) {
       els.backToChat2.addEventListener("click", () => {
-        Home.show(settingsOrigin === "chat" ? "chat" : "contacts");
+        if (settingsOrigin === "chat") {
+          Home.show("chat");
+        } else {
+          Home.show("contacts");
+        }
       });
     }
 
