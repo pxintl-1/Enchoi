@@ -60,6 +60,21 @@
           <span id="card-feedback" class="feedback" aria-live="polite"></span>
         </div>
 
+        <h2 class="section-title">批量添加字卡</h2>
+        <p class="hint">
+          一行视为一张字卡。批量添加的字卡会放进当前选中的分类（当前：
+          <strong id="batch-category-label">默认</strong>）。
+        </p>
+        <textarea
+          id="batch-card-input"
+          rows="5"
+          placeholder="我在呢。&#10;晚安，做个好梦。&#10;今天想我了吗？"
+        ></textarea>
+        <div class="actions">
+          <button id="batch-add-btn" class="primary-btn" type="button">批量添加</button>
+          <span id="batch-feedback" class="feedback" aria-live="polite"></span>
+        </div>
+
         <h2 class="section-title">新建分类</h2>
         <div class="actions">
           <input
