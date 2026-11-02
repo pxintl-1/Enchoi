@@ -2,7 +2,6 @@ const Settings = (() => {
   let els = {};
   let feedbackTimer = null;
   let profileFeedbackTimer = null;
-  let batchFeedbackTimer = null;
   let pickingRole = null;
 
   let activeCategory = CardDeck.ALL_CATEGORY;
@@ -28,11 +27,7 @@ const Settings = (() => {
     els.categoryTabs = document.getElementById("category-tabs");
     els.newCategoryInput = document.getElementById("new-category-input");
     els.addCategoryBtn = document.getElementById("add-category-btn");
-
-    els.batchCardInput = document.getElementById("batch-card-input");
-    els.batchAddBtn = document.getElementById("batch-add-btn");
-    els.batchFeedback = document.getElementById("batch-feedback");
-    els.batchCategoryLabel = document.getElementById("batch-category-label");
+    els.targetCategoryLabel = document.getElementById("target-category-label");
 
     els.inputTaName = document.getElementById("input-ta-name");
     els.inputUserName = document.getElementById("input-user-name");
@@ -53,19 +48,11 @@ const Settings = (() => {
     els.backBtn.addEventListener("click", showChatView);
     els.backBtn2.addEventListener("click", showChatView);
 
-    els.saveCardBtn.addEventListener("click", saveCard);
+    els.saveCardBtn.addEventListener("click", saveCards);
     els.newCardInput.addEventListener("keydown", (event) => {
       if ((event.ctrlKey || event.metaKey) && event.key === "Enter") {
         event.preventDefault();
-        saveCard();
-      }
-    });
-
-    els.batchAddBtn.addEventListener("click", batchAddCards);
-    els.batchCardInput.addEventListener("keydown", (event) => {
-      if ((event.ctrlKey || event.metaKey) && event.key === "Enter") {
-        event.preventDefault();
-        batchAddCards();
+        saveCards();
       }
     });
 
@@ -165,18 +152,7 @@ const Settings = (() => {
     feedbackTimer = window.setTimeout(() => {
       els.cardFeedback.textContent = "";
       els.cardFeedback.classList.remove("is-error");
-    }, 2600);
-  }
-
-  function showBatchFeedback(message, isError) {
-    if (!els.batchFeedback) return;
-    els.batchFeedback.textContent = message;
-    els.batchFeedback.classList.toggle("is-error", Boolean(isError));
-    if (batchFeedbackTimer) clearTimeout(batchFeedbackTimer);
-    batchFeedbackTimer = window.setTimeout(() => {
-      els.batchFeedback.textContent = "";
-      els.batchFeedback.classList.remove("is-error");
-    }, 3200);
+    }, 3000);
   }
 
   function showProfileFeedback(message, isError) {
@@ -207,15 +183,15 @@ const Settings = (() => {
     chatCategory = els.categorySelect.value;
   }
 
-  function updateBatchCategoryLabel() {
-    if (!els.batchCategoryLabel) return;
+  function currentTargetCategory() {
+    return activeCategory === CardDeck.ALL_CATEGORY
+      ? CardDeck.DEFAULT_CATEGORY
+      : activeCategory;
+  }
 
-    const target =
-      activeCategory === CardDeck.ALL_CATEGORY
-        ? CardDeck.DEFAULT_CATEGORY
-        : activeCategory;
-
-    els.batchCategoryLabel.textContent = target;
+  function updateTargetCategoryLabel() {
+    if (!els.targetCategoryLabel) return;
+    els.targetCategoryLabel.textContent = currentTargetCategory();
   }
 
   function renderCards() {
@@ -242,7 +218,7 @@ const Settings = (() => {
       .join("");
 
     els.cardCount.textContent = String(CardDeck.getAll().length);
-    updateBatchCategoryLabel();
+    updateTargetCategoryLabel();
 
     const list = CardDeck.getByCategory(activeCategory);
 
@@ -275,41 +251,12 @@ const Settings = (() => {
     return escapeHtml(text).replace(/"/g, "&quot;");
   }
 
-  function currentTargetCategory() {
-    return activeCategory === CardDeck.ALL_CATEGORY
-      ? CardDeck.DEFAULT_CATEGORY
-      : activeCategory;
-  }
-
-  function saveCard() {
-    const text = els.newCardInput.value;
-    const category = currentTargetCategory();
-
-    if (!text.trim()) {
-      showCardFeedback("字卡内容不能为空。", true);
-      els.newCardInput.focus();
-      return;
-    }
-
-    const result = CardDeck.add(text, category);
-
-    if (!result.ok) {
-      showCardFeedback(result.msg, true);
-      return;
-    }
-
-    els.newCardInput.value = "";
-    renderCategorySelect();
-    renderCards();
-    showCardFeedback(`已保存到「${category}」。`);
-    els.newCardInput.focus();
-  }
-
-  function batchAddCards() {
-    const raw = els.batchCardInput.value;
+  function saveCards() {
+    const raw = els.newCardInput.value;
 
     if (!raw.trim()) {
-      showBatchFeedback("先粘贴要批量添加的字卡，一行一张。", true);
+      showCardFeedback("字卡内容不能为空。", true);
+      els.newCardInput.focus();
       return;
     }
 
@@ -319,7 +266,7 @@ const Settings = (() => {
       .filter(Boolean);
 
     if (lines.length === 0) {
-      showBatchFeedback("没有找到有效字卡。", true);
+      showCardFeedback("没有找到有效字卡。", true);
       return;
     }
 
@@ -327,23 +274,30 @@ const Settings = (() => {
     const result = CardDeck.importFromArray(lines, category);
 
     if (!result.ok) {
-      showBatchFeedback(result.msg, true);
+      showCardFeedback(result.msg, true);
       return;
     }
 
-    els.batchCardInput.value = "";
+    els.newCardInput.value = "";
     renderCategorySelect();
     renderCards();
 
     const skipped = lines.length - result.added;
-    const parts = [`成功添加 ${result.added} 张到「${category}」`];
 
-    if (skipped > 0) {
-      parts.push(`跳过 ${skipped} 张（重复或空行）`);
+    if (lines.length === 1) {
+      if (result.added === 1) {
+        showCardFeedback(`已保存到「${category}」。`);
+      } else {
+        showCardFeedback(`「${category}」里已经有这张字卡了。`, true);
+      }
+    } else {
+      const parts = [`已添加 ${result.added} 张到「${category}」`];
+      if (skipped > 0) parts.push(`跳过 ${skipped} 张重复`);
+      parts.push(`当前共 ${result.total} 张`);
+      showCardFeedback(parts.join("，") + "。");
     }
 
-    parts.push(`当前共 ${result.total} 张字卡`);
-    showBatchFeedback(parts.join("，") + "。");
+    els.newCardInput.focus();
   }
 
   function addCategory() {
