@@ -2,8 +2,8 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#f3eee8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#ededed">
   <title>只对你可见</title>
   <link rel="stylesheet" href="css/style.css">
 </head>
@@ -12,25 +12,26 @@
     <!-- 聊天视图 -->
     <section id="view-chat" class="view">
       <header class="chat-header">
-        <div>
+        <div class="chat-header__left">
           <div class="chat-header__name" id="ta-name">TA</div>
-          <div class="chat-header__status" id="typing-status" aria-live="polite">在线</div>
         </div>
-        <button id="open-cards-page" class="icon-btn" type="button">管理字卡</button>
+        <button id="open-cards-page" class="header-btn" type="button">字卡</button>
       </header>
 
       <main id="message-list" class="message-list" aria-live="polite"></main>
 
       <footer class="composer">
-        <textarea id="message-input" rows="1" placeholder="说点什么……"></textarea>
-        <button id="send-btn" class="send-btn" type="button">发送</button>
+        <div class="composer__inner">
+          <textarea id="message-input" rows="1" placeholder="发消息……"></textarea>
+          <button id="send-btn" class="send-btn" type="button">发送</button>
+        </div>
       </footer>
     </section>
 
     <!-- 字卡视图 -->
     <section id="view-cards" class="view" hidden>
       <header class="page-header">
-        <button id="back-to-chat" class="icon-btn" type="button">返回聊天</button>
+        <button id="back-to-chat" class="header-btn" type="button">返回</button>
         <h1 class="page-title">TA 的字卡库</h1>
         <span class="page-count">共 <strong id="card-count">0</strong> 张</span>
       </header>
