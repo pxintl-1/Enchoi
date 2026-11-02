@@ -865,3 +865,28 @@ body.keyboard-open .page-header {
 :root[data-bubble="soft"] .message--user .bubble::after {
   display: none;
 }
+#custom-css-input {
+  width: 100%;
+  max-width: 100%;
+  padding: 11px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  outline: none;
+  background: #fff;
+  color: var(--text);
+  line-height: 1.5;
+  font-size: 14px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  resize: vertical;
+}
+
+#custom-css-input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+:root[data-theme="dark"] #custom-css-input {
+  background: #242424;
+  color: var(--text);
+  border-color: var(--border);
+}
