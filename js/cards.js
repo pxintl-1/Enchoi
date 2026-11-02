@@ -98,7 +98,6 @@ const CardDeck = (() => {
   }
 
   function getCategories() {
-    // 保留顺序：默认分类优先，其余按创建顺序
     const list = [...categories];
     if (!list.includes(DEFAULT_CATEGORY)) {
       list.unshift(DEFAULT_CATEGORY);
