@@ -1097,3 +1097,6 @@ body.keyboard-open .page-header {
 #cards-contact-name {
   color: var(--accent);
 }
+#import-cards-file {
+  display: none;
+}
