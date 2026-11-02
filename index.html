@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#ededed">
   <title>只对你可见</title>
   <link rel="stylesheet" href="css/style.css">
@@ -13,25 +13,27 @@
     <section id="view-chat" class="view">
       <header class="chat-header">
         <div class="chat-header__left">
-          <div class="chat-header__name" id="ta-name">TA</div>
+          <div class="avatar avatar--sm" id="header-ta-avatar" aria-hidden="true"></div>
+          <div>
+            <div class="chat-header__name" id="ta-name">TA</div>
+            <div class="chat-header__status" id="typing-status" aria-live="polite">在线</div>
+          </div>
         </div>
-        <button id="open-cards-page" class="header-btn" type="button">字卡</button>
+        <button id="open-cards-page" class="icon-btn" type="button">管理字卡</button>
       </header>
 
       <main id="message-list" class="message-list" aria-live="polite"></main>
 
       <footer class="composer">
-        <div class="composer__inner">
-          <textarea id="message-input" rows="1" placeholder="发消息……"></textarea>
-          <button id="send-btn" class="send-btn" type="button">发送</button>
-        </div>
+        <textarea id="message-input" rows="1" placeholder="发消息……"></textarea>
+        <button id="send-btn" class="send-btn" type="button">发送</button>
       </footer>
     </section>
 
     <!-- 字卡视图 -->
     <section id="view-cards" class="view" hidden>
       <header class="page-header">
-        <button id="back-to-chat" class="header-btn" type="button">返回</button>
+        <button id="back-to-chat" class="icon-btn" type="button">返回聊天</button>
         <h1 class="page-title">TA 的字卡库</h1>
         <span class="page-count">共 <strong id="card-count">0</strong> 张</span>
       </header>
@@ -57,12 +59,36 @@
         <p id="card-empty" class="hint" hidden>
           还没有字卡。先在上方保存一张，再回聊天页试试。
         </p>
+
+        <h2 class="section-title">头像设置</h2>
+        <p class="hint">头像只保存在当前浏览器，不会上传到任何服务器。</p>
+        <div class="avatar-settings">
+          <div class="avatar-setting">
+            <div class="avatar avatar--lg" id="settings-ta-avatar" aria-hidden="true"></div>
+            <div class="avatar-setting__label">TA 的头像</div>
+            <div class="avatar-setting__actions">
+              <button type="button" class="small-btn" data-pick-avatar="ta">更换</button>
+              <button type="button" class="small-btn" data-clear-avatar="ta">恢复默认</button>
+            </div>
+          </div>
+          <div class="avatar-setting">
+            <div class="avatar avatar--lg" id="settings-user-avatar" aria-hidden="true"></div>
+            <div class="avatar-setting__label">我的头像</div>
+            <div class="avatar-setting__actions">
+              <button type="button" class="small-btn" data-pick-avatar="user">更换</button>
+              <button type="button" class="small-btn" data-clear-avatar="user">恢复默认</button>
+            </div>
+          </div>
+        </div>
       </main>
     </section>
   </div>
 
+  <input id="avatar-file-input" type="file" accept="image/*" hidden>
+
   <script src="js/config.js"></script>
   <script src="js/storage.js"></script>
+  <script src="js/avatar.js"></script>
   <script src="js/cards.js"></script>
   <script src="js/chat.js"></script>
   <script src="js/settings.js"></script>
