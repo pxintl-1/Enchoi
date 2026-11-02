@@ -3,6 +3,7 @@ const Settings = (() => {
   let feedbackTimer = null;
   let profileFeedbackTimer = null;
   let themeFeedbackTimer = null;
+  let bubbleFeedbackTimer = null;
   let pickingRole = null;
 
   let activeCategory = CardDeck.ALL_CATEGORY;
@@ -40,6 +41,9 @@ const Settings = (() => {
     els.themeToggle = document.getElementById("theme-toggle");
     els.settingsThemeToggle = document.getElementById("settings-theme-toggle");
     els.themeFeedback = document.getElementById("theme-feedback");
+
+    els.bubbleStyleSelect = document.getElementById("bubble-style-select");
+    els.bubbleFeedback = document.getElementById("bubble-feedback");
 
     els.settingsTaAvatar = document.getElementById("settings-ta-avatar");
     els.settingsUserAvatar = document.getElementById("settings-user-avatar");
@@ -93,6 +97,11 @@ const Settings = (() => {
 
     if (els.settingsThemeToggle) {
       els.settingsThemeToggle.addEventListener("click", toggleTheme);
+    }
+
+    if (els.bubbleStyleSelect) {
+      els.bubbleStyleSelect.value = BubbleStore.get();
+      els.bubbleStyleSelect.addEventListener("change", onBubbleStyleChange);
     }
 
     els.saveProfileBtn.addEventListener("click", saveProfile);
@@ -174,6 +183,28 @@ const Settings = (() => {
 
     themeFeedbackTimer = window.setTimeout(() => {
       els.themeFeedback.textContent = "";
+    }, 2200);
+  }
+
+  function onBubbleStyleChange() {
+    const next = els.bubbleStyleSelect.value;
+    BubbleStore.set(next);
+
+    if (!els.bubbleFeedback) return;
+
+    const labels = {
+      default: "微信经典",
+      rounded: "大圆角",
+      minimal: "极简无箭头",
+      soft: "柔和阴影"
+    };
+
+    els.bubbleFeedback.textContent = `已切换为「${labels[next] || next}」。`;
+
+    if (bubbleFeedbackTimer) clearTimeout(bubbleFeedbackTimer);
+
+    bubbleFeedbackTimer = window.setTimeout(() => {
+      els.bubbleFeedback.textContent = "";
     }, 2200);
   }
 
