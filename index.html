@@ -117,6 +117,22 @@
           <span id="bubble-feedback" class="feedback" aria-live="polite"></span>
         </div>
 
+        <h2 class="section-title">自定义 CSS</h2>
+        <p class="hint">
+          粘贴 CSS 后点“应用”，会立即作用到聊天页，并保存在当前浏览器。左侧气泡用
+          <code>.incoming .bubble</code>，右侧气泡用 <code>.outgoing .bubble</code>。
+        </p>
+        <textarea
+          id="custom-css-input"
+          rows="8"
+          placeholder=".incoming .bubble { ... }&#10;.outgoing .bubble { ... }"
+        ></textarea>
+        <div class="actions">
+          <button id="apply-custom-css-btn" class="primary-btn" type="button">应用</button>
+          <button id="clear-custom-css-btn" class="small-btn" type="button">清空</button>
+          <span id="custom-css-feedback" class="feedback" aria-live="polite"></span>
+        </div>
+
         <h2 class="section-title">名字与称呼</h2>
 
         <label class="field-label" for="input-ta-name">TA 的名字</label>
