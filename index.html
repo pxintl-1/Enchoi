@@ -136,11 +136,17 @@
 
         <h2 class="section-title">导出 / 导入字卡</h2>
         <p class="hint">
-          导出会把当前好友的字卡保存为 JSON 文件；可以选择只导出某个分类。导入会把 JSON 里的字卡追加到当前好友字卡库，重复的自动跳过。
+          导出可以把当前好友的字卡保存为 JSON 文件；可勾选一个或多个分类，不勾选时默认导出全部分类。
+          导入会把 JSON 里的字卡追加到当前好友字卡库，并自动显示每个分类，重复的自动跳过。
         </p>
 
-        <label class="field-label" for="export-category-select">导出分类</label>
-        <select id="export-category-select" class="category-select"></select>
+        <label class="field-label">导出分类（可多选）</label>
+        <div class="actions">
+          <button id="export-select-all" class="small-btn" type="button">全选</button>
+          <button id="export-select-none" class="small-btn" type="button">清空</button>
+        </div>
+        <div id="export-category-list" class="export-category-list"></div>
+        <p class="hint" id="export-selected-hint">未选择时默认导出全部分类。</p>
 
         <div class="actions">
           <button id="export-cards-btn" class="small-btn" type="button">导出字卡</button>
