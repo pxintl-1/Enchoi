@@ -4,6 +4,9 @@ const Settings = (() => {
   let profileFeedbackTimer = null;
   let pickingRole = null;
 
+  let activeCategory = CardDeck.ALL_CATEGORY;
+  let chatCategory = CardDeck.ALL_CATEGORY;
+
   function init() {
     els.viewChat = document.getElementById("view-chat");
     els.viewCards = document.getElementById("view-cards");
@@ -15,11 +18,15 @@ const Settings = (() => {
     els.backBtn2 = document.getElementById("back-to-chat-2");
 
     els.cardCount = document.getElementById("card-count");
+    els.categorySelect = document.getElementById("card-category-select");
     els.newCardInput = document.getElementById("new-card-input");
     els.saveCardBtn = document.getElementById("save-card-btn");
     els.cardFeedback = document.getElementById("card-feedback");
     els.cardList = document.getElementById("card-list");
     els.cardEmpty = document.getElementById("card-empty");
+    els.categoryTabs = document.getElementById("category-tabs");
+    els.newCategoryInput = document.getElementById("new-category-input");
+    els.addCategoryBtn = document.getElementById("add-category-btn");
 
     els.inputTaName = document.getElementById("input-ta-name");
     els.inputUserName = document.getElementById("input-user-name");
@@ -41,12 +48,37 @@ const Settings = (() => {
     els.backBtn2.addEventListener("click", showChatView);
 
     els.saveCardBtn.addEventListener("click", saveCard);
-
     els.newCardInput.addEventListener("keydown", (event) => {
       if ((event.ctrlKey || event.metaKey) && event.key === "Enter") {
         event.preventDefault();
         saveCard();
       }
+    });
+
+    els.addCategoryBtn.addEventListener("click", addCategory);
+    els.newCategoryInput.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") {
+        event.preventDefault();
+        addCategory();
+      }
+    });
+
+    els.categorySelect.addEventListener("change", () => {
+      chatCategory = els.categorySelect.value;
+      els.categorySelect.blur();
+      showCardFeedback(
+        chatCategory === CardDeck.ALL_CATEGORY
+          ? "聊天将从全部分类里抽取。"
+          : `聊天只从「${chatCategory}」里抽取。`
+      );
+      Chat.setCardCategory(chatCategory);
+    });
+
+    els.categoryTabs.addEventListener("click", (event) => {
+      const button = event.target.closest("[data-category]");
+      if (!button) return;
+      activeCategory = button.dataset.category;
+      renderCards();
     });
 
     els.saveProfileBtn.addEventListener("click", saveProfile);
@@ -78,9 +110,12 @@ const Settings = (() => {
       });
     });
 
+    renderCategorySelect();
     renderCards();
     renderAvatarSettings();
     fillProfileForm();
+
+    Chat.setCardCategory(chatCategory);
   }
 
   function showView(target) {
@@ -91,6 +126,7 @@ const Settings = (() => {
 
   function showCardsView() {
     showView("cards");
+    renderCategorySelect();
     renderCards();
     window.setTimeout(() => els.newCardInput.focus(), 50);
   }
@@ -109,12 +145,9 @@ const Settings = (() => {
 
   function showCardFeedback(message, isError) {
     if (!els.cardFeedback) return;
-
     els.cardFeedback.textContent = message;
     els.cardFeedback.classList.toggle("is-error", Boolean(isError));
-
     if (feedbackTimer) clearTimeout(feedbackTimer);
-
     feedbackTimer = window.setTimeout(() => {
       els.cardFeedback.textContent = "";
       els.cardFeedback.classList.remove("is-error");
@@ -123,31 +156,75 @@ const Settings = (() => {
 
   function showProfileFeedback(message, isError) {
     if (!els.profileFeedback) return;
-
     els.profileFeedback.textContent = message;
     els.profileFeedback.classList.toggle("is-error", Boolean(isError));
-
     if (profileFeedbackTimer) clearTimeout(profileFeedbackTimer);
-
     profileFeedbackTimer = window.setTimeout(() => {
       els.profileFeedback.textContent = "";
       els.profileFeedback.classList.remove("is-error");
     }, 2600);
   }
 
-  function renderCards() {
-    const cards = CardDeck.getAll();
-    els.cardCount.textContent = String(cards.length);
+  function renderCategorySelect() {
+    const categories = CardDeck.getCategories();
+    const options = [
+      `<option value="${CardDeck.ALL_CATEGORY}">全部分类（默认）</option>`,
+      ...categories.map(
+        (cat) => `<option value="${escapeAttr(cat)}">${escapeHtml(cat)}</option>`
+      )
+    ];
 
-    if (cards.length === 0) {
+    els.categorySelect.innerHTML = options.join("");
+    els.categorySelect.value = categories.includes(chatCategory)
+      ? chatCategory
+      : CardDeck.ALL_CATEGORY;
+
+    chatCategory = els.categorySelect.value;
+  }
+
+  function renderCards() {
+    const categories = CardDeck.getCategories();
+
+    if (
+      activeCategory !== CardDeck.ALL_CATEGORY &&
+      !categories.includes(activeCategory)
+    ) {
+      activeCategory = CardDeck.ALL_CATEGORY;
+    }
+
+    const tabs = [
+      { key: CardDeck.ALL_CATEGORY, label: "全部" },
+      ...categories.map((cat) => ({ key: cat, label: cat }))
+    ];
+
+    els.categoryTabs.innerHTML = tabs
+      .map((tab) => {
+        const count = CardDeck.countByCategory(tab.key);
+        const active = tab.key === activeCategory ? " is-active" : "";
+        return `<button type="button" class="category-tab${active}" data-category="${escapeAttr(tab.key)}">${escapeHtml(tab.label)}<span class="category-tab__count">${count}</span></button>`;
+      })
+      .join("");
+
+    els.cardCount.textContent = String(CardDeck.getAll().length);
+
+    const list = CardDeck.getByCategory(activeCategory);
+
+    if (list.length === 0) {
       els.cardList.innerHTML = "";
       els.cardEmpty.hidden = false;
       return;
     }
 
     els.cardEmpty.hidden = true;
-    els.cardList.innerHTML = cards
-      .map((card) => `<li>${escapeHtml(card)}</li>`)
+    els.cardList.innerHTML = list
+      .map(
+        (card) => `
+          <li>
+            <span class="card-list__category">${escapeHtml(card.category)}</span>
+            <span class="card-list__text">${escapeHtml(card.text)}</span>
+          </li>
+        `
+      )
       .join("");
   }
 
@@ -157,8 +234,16 @@ const Settings = (() => {
     return div.innerHTML;
   }
 
+  function escapeAttr(text) {
+    return escapeHtml(text).replace(/"/g, "&quot;");
+  }
+
   function saveCard() {
     const text = els.newCardInput.value;
+    const category =
+      activeCategory === CardDeck.ALL_CATEGORY
+        ? CardDeck.DEFAULT_CATEGORY
+        : activeCategory;
 
     if (!text.trim()) {
       showCardFeedback("字卡内容不能为空。", true);
@@ -166,7 +251,7 @@ const Settings = (() => {
       return;
     }
 
-    const result = CardDeck.add(text);
+    const result = CardDeck.add(text, category);
 
     if (!result.ok) {
       showCardFeedback(result.msg, true);
@@ -174,14 +259,35 @@ const Settings = (() => {
     }
 
     els.newCardInput.value = "";
+    renderCategorySelect();
     renderCards();
-    showCardFeedback("已保存。这张字卡会出现在聊天回复里。");
+    showCardFeedback(`已保存到「${category}」。`);
+    els.newCardInput.focus();
+  }
+
+  function addCategory() {
+    const name = els.newCategoryInput.value.trim();
+    if (!name) {
+      showCardFeedback("分类名不能为空。", true);
+      return;
+    }
+
+    const exists = CardDeck.getCategories().includes(name);
+    if (exists) {
+      showCardFeedback("这个分类已经存在。", true);
+      return;
+    }
+
+    activeCategory = name;
+    els.newCategoryInput.value = "";
+    renderCategorySelect();
+    renderCards();
+    showCardFeedback(`已切换到新分类「${name}」，现在添加的字卡会放进去。`);
     els.newCardInput.focus();
   }
 
   function fillProfileForm() {
     const profile = ProfileStore.get();
-
     if (els.inputTaName) els.inputTaName.value = profile.taName || "";
     if (els.inputUserName) els.inputUserName.value = profile.userName || "";
     if (els.inputTaCall) els.inputTaCall.value = profile.taCall || "";
@@ -208,7 +314,6 @@ const Settings = (() => {
 
   function renderAvatarPreview(el, role) {
     if (!el) return;
-
     const dataUrl = AvatarStore.get(role);
     const profile = ProfileStore.get();
     const name =
@@ -231,17 +336,12 @@ const Settings = (() => {
 
   function readImageFile(file, maxSize, onSuccess, onError) {
     if (!file) return;
-
-    if (!file.type.startsWith("image/")) {
-      onError("请选择图片文件。");
-      return;
-    }
-
+    if (!file.type.startsWith("image/")) return onError("请选择图片文件。");
     if (file.size > maxSize) {
-      onError(`图片太大，请选择 ${Math.floor(maxSize / 1024 / 1024)}MB 以内的图片。`);
-      return;
+      return onError(
+        `图片太大，请选择 ${Math.floor(maxSize / 1024 / 1024)}MB 以内的图片。`
+      );
     }
-
     const reader = new FileReader();
     reader.onload = () => onSuccess(String(reader.result || ""));
     reader.onerror = () => onError("读取图片失败，请重试。");
@@ -251,7 +351,6 @@ const Settings = (() => {
   function onAvatarPicked() {
     const file = els.avatarFileInput.files && els.avatarFileInput.files[0];
     const role = pickingRole;
-
     if (!file || !role) return;
 
     readImageFile(
@@ -262,7 +361,6 @@ const Settings = (() => {
           showProfileFeedback("保存失败，可能是存储空间不足。", true);
           return;
         }
-
         renderAvatarSettings();
         Chat.refreshAppearance();
         showProfileFeedback(role === "ta" ? "TA 的头像已更新。" : "你的头像已更新。");
@@ -280,12 +378,10 @@ const Settings = (() => {
       2 * 1024 * 1024,
       (dataUrl) => {
         const ok = ProfileStore.update({ chatBackground: dataUrl });
-
         if (!ok) {
           showProfileFeedback("背景保存失败，可能是存储空间不足。", true);
           return;
         }
-
         Chat.refreshAppearance();
         showProfileFeedback("聊天背景已更新。");
       },
