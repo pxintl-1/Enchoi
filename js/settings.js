@@ -12,7 +12,7 @@ const Settings = (() => {
   let activeCategory = CardDeck.ALL_CATEGORY;
   let chatCategory = CardDeck.ALL_CATEGORY;
   let saveCategory = CardDeck.DEFAULT_CATEGORY;
-  let exportCategory = CardDeck.ALL_CATEGORY;
+  let exportSelected = new Set();
   let editingContactId = null;
 
   let cardsOrigin = "home";
@@ -47,7 +47,11 @@ const Settings = (() => {
     els.cardsOwnerSelect = document.getElementById("cards-owner-select");
     els.categorySelect = document.getElementById("card-category-select");
     els.saveCategorySelect = document.getElementById("save-category-select");
-    els.exportCategorySelect = document.getElementById("export-category-select");
+    els.exportCategoryList = document.getElementById("export-category-list");
+    els.exportSelectAll = document.getElementById("export-select-all");
+    els.exportSelectNone = document.getElementById("export-select-none");
+    els.exportSelectedHint = document.getElementById("export-selected-hint");
+
     els.newCardInput = document.getElementById("new-card-input");
     els.saveCardBtn = document.getElementById("save-card-btn");
     els.cardFeedback = document.getElementById("card-feedback");
@@ -197,15 +201,36 @@ const Settings = (() => {
         els.saveCategorySelect.blur();
       });
     }
-    if (els.exportCategorySelect) {
-      els.exportCategorySelect.addEventListener("change", () => {
-        exportCategory =
-          els.exportCategorySelect.value || CardDeck.ALL_CATEGORY;
-        els.exportCategorySelect.blur();
-      });
-    }
     if (els.cardsOwnerSelect) {
       els.cardsOwnerSelect.addEventListener("change", onCardsOwnerChange);
+    }
+
+    if (els.exportCategoryList) {
+      els.exportCategoryList.addEventListener("change", (event) => {
+        const input = event.target.closest("[data-export-category]");
+        if (!input) return;
+        const name = input.dataset.exportCategory;
+
+        if (input.checked) {
+          exportSelected.add(name);
+        } else {
+          exportSelected.delete(name);
+        }
+
+        updateExportSelectedHint();
+      });
+    }
+    if (els.exportSelectAll) {
+      els.exportSelectAll.addEventListener("click", () => {
+        CardDeck.getCategories().forEach((cat) => exportSelected.add(cat));
+        renderExportCategoryList();
+      });
+    }
+    if (els.exportSelectNone) {
+      els.exportSelectNone.addEventListener("click", () => {
+        exportSelected.clear();
+        renderExportCategoryList();
+      });
     }
 
     if (els.exportCardsBtn) {
@@ -291,7 +316,7 @@ const Settings = (() => {
     editingContactId = Contacts.getActiveId();
     CardDeck.loadFor(editingContactId);
     activeCategory = CardDeck.ALL_CATEGORY;
-    exportCategory = CardDeck.ALL_CATEGORY;
+    exportSelected = new Set();
     Home.show("cards");
   }
 
@@ -314,13 +339,13 @@ const Settings = (() => {
     activeCategory = CardDeck.ALL_CATEGORY;
     chatCategory = CardDeck.ALL_CATEGORY;
     saveCategory = CardDeck.DEFAULT_CATEGORY;
-    exportCategory = CardDeck.ALL_CATEGORY;
+    exportSelected = new Set();
     editingContactId = c.id;
     Chat.setContact(c.id);
     renderContacts();
     renderCategorySelect();
     renderSaveCategorySelect();
-    renderExportCategorySelect();
+    renderExportCategoryList();
     renderCards();
   }
 
@@ -333,10 +358,10 @@ const Settings = (() => {
     activeCategory = CardDeck.ALL_CATEGORY;
     chatCategory = CardDeck.ALL_CATEGORY;
     saveCategory = CardDeck.DEFAULT_CATEGORY;
-    exportCategory = CardDeck.ALL_CATEGORY;
+    exportSelected = new Set();
     renderCategorySelect();
     renderSaveCategorySelect();
-    renderExportCategorySelect();
+    renderExportCategoryList();
     renderCards();
   }
 
@@ -472,7 +497,7 @@ const Settings = (() => {
     renderCardsOwnerSelect();
     renderCategorySelect();
     renderSaveCategorySelect();
-    renderExportCategorySelect();
+    renderExportCategoryList();
     renderCards();
   }
 
@@ -484,43 +509,65 @@ const Settings = (() => {
     }
   }
 
-  function renderExportCategorySelect() {
-    if (!els.exportCategorySelect) return;
+  function renderExportCategoryList() {
+    if (!els.exportCategoryList) return;
 
     const categories = CardDeck.getCategories();
 
-    if (
-      exportCategory !== CardDeck.ALL_CATEGORY &&
-      !categories.includes(exportCategory)
-    ) {
-      exportCategory = CardDeck.ALL_CATEGORY;
+    [...exportSelected].forEach((name) => {
+      if (!categories.includes(name)) exportSelected.delete(name);
+    });
+
+    if (categories.length === 0) {
+      els.exportCategoryList.innerHTML =
+        '<p class="hint">当前好友还没有任何分类。</p>';
+      updateExportSelectedHint();
+      return;
     }
 
-    const options = [
-      `<option value="${CardDeck.ALL_CATEGORY}">全部分类</option>`,
-      ...categories.map(
-        (cat) => `<option value="${escapeAttr(cat)}">${escapeHtml(cat)}</option>`
-      )
-    ];
+    els.exportCategoryList.innerHTML = categories
+      .map((cat) => {
+        const checked = exportSelected.has(cat) ? " checked" : "";
+        return `
+          <label>
+            <input type="checkbox" data-export-category="${escapeAttr(cat)}"${checked}>
+            <span>${escapeHtml(cat)}</span>
+          </label>
+        `;
+      })
+      .join("");
 
-    els.exportCategorySelect.innerHTML = options.join("");
-    els.exportCategorySelect.value = exportCategory;
+    updateExportSelectedHint();
+  }
+
+  function updateExportSelectedHint() {
+    if (!els.exportSelectedHint) return;
+
+    if (exportSelected.size === 0) {
+      els.exportSelectedHint.textContent = "未选择时默认导出全部分类。";
+      return;
+    }
+
+    els.exportSelectedHint.textContent = `已选择：${[...exportSelected].join(
+      "、"
+    )}`;
   }
 
   function exportCards() {
     const contact = editingContact();
     const all = CardDeck.getAll();
-    const selected = exportCategory;
+
+    const selected = [...exportSelected];
     const cards =
-      selected === CardDeck.ALL_CATEGORY
+      selected.length === 0
         ? all
-        : all.filter((card) => card.category === selected);
+        : all.filter((card) => selected.includes(card.category));
 
     if (cards.length === 0) {
       showTransferFeedback(
-        selected === CardDeck.ALL_CATEGORY
+        selected.length === 0
           ? "当前好友字卡库是空的，没有可导出的内容。"
-          : `分类「${selected}」下没有字卡。`,
+          : "所选分类下没有字卡。",
         true
       );
       return;
@@ -530,7 +577,7 @@ const Settings = (() => {
       type: "private-chat-cards",
       version: 1,
       contactName: contact.name || "TA",
-      category: selected === CardDeck.ALL_CATEGORY ? "全部分类" : selected,
+      categories: selected.length === 0 ? "全部分类" : selected,
       exportedAt: new Date().toISOString(),
       cards
     };
@@ -542,9 +589,9 @@ const Settings = (() => {
       const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
       const suffix =
-        selected === CardDeck.ALL_CATEGORY
+        selected.length === 0
           ? "all"
-          : selected.replace(/\s+/g, "_");
+          : selected.map((s) => s.replace(/\s+/g, "_")).join("_");
       link.href = url;
       link.download = `cards-${(contact.name || "TA")}-${suffix}-${new Date()
         .toISOString()
@@ -555,7 +602,7 @@ const Settings = (() => {
       URL.revokeObjectURL(url);
       showTransferFeedback(
         `已导出 ${cards.length} 张字卡（${
-          selected === CardDeck.ALL_CATEGORY ? "全部分类" : selected
+          selected.length === 0 ? "全部分类" : selected.join("、")
         }）。`
       );
     } catch (error) {
@@ -648,7 +695,7 @@ const Settings = (() => {
 
       renderCategorySelect();
       renderSaveCategorySelect();
-      renderExportCategorySelect();
+      renderExportCategoryList();
       renderCards();
 
       const skipped = list.length - added;
@@ -935,7 +982,7 @@ const Settings = (() => {
 
     renderCategorySelect();
     renderSaveCategorySelect();
-    renderExportCategorySelect();
+    renderExportCategoryList();
     renderCards();
     showCardFeedback(`已更新为「${result.category}」下的字卡。`);
   }
@@ -953,7 +1000,7 @@ const Settings = (() => {
     }
     renderCategorySelect();
     renderSaveCategorySelect();
-    renderExportCategorySelect();
+    renderExportCategoryList();
     renderCards();
     showCardFeedback("字卡已删除。");
   }
@@ -983,7 +1030,7 @@ const Settings = (() => {
     els.newCardInput.value = "";
     renderCategorySelect();
     renderSaveCategorySelect();
-    renderExportCategorySelect();
+    renderExportCategoryList();
     renderCards();
 
     const skipped = lines.length - result.added;
@@ -1021,7 +1068,7 @@ const Settings = (() => {
     els.newCategoryInput.value = "";
     renderCategorySelect();
     renderSaveCategorySelect();
-    renderExportCategorySelect();
+    renderExportCategoryList();
     renderCards();
     showCardFeedback(`已创建分类「${result.category}」。`);
   }
