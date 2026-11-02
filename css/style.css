@@ -829,3 +829,39 @@ body.keyboard-open .page-header {
 :root[data-theme="dark"] .message--user .bubble::after {
   border-left-color: var(--user-bubble);
 }
+/* ===== 气泡样式预设 ===== */
+:root[data-bubble="rounded"] .bubble {
+  border-radius: 18px;
+}
+
+:root[data-bubble="rounded"] .message--user .bubble {
+  border-bottom-right-radius: 6px;
+}
+
+:root[data-bubble="rounded"] .message--ta .bubble {
+  border-bottom-left-radius: 6px;
+}
+
+:root[data-bubble="minimal"] .bubble {
+  border-radius: 10px;
+  box-shadow: none;
+}
+
+:root[data-bubble="minimal"] .message--ta .bubble::before,
+:root[data-bubble="minimal"] .message--user .bubble::after {
+  display: none;
+}
+
+:root[data-bubble="soft"] .bubble {
+  border-radius: 14px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+}
+
+:root[data-bubble="soft"][data-theme="dark"] .bubble {
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+}
+
+:root[data-bubble="soft"] .message--ta .bubble::before,
+:root[data-bubble="soft"] .message--user .bubble::after {
+  display: none;
+}
