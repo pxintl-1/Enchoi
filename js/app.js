@@ -66,7 +66,6 @@ function setupKeyboardHandling() {
   input.addEventListener("focus", () => setKeyboard(true));
   input.addEventListener("blur", () => setKeyboard(false));
 
-  // iOS 上键盘弹起不一定触发 focus/blur，用 visualViewport 高度差兜底
   if (window.visualViewport) {
     const baseline = window.visualViewport.height;
 
