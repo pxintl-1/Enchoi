@@ -1,6 +1,7 @@
 const CardDeck = (() => {
   const DEFAULT_CATEGORY = "默认";
   const ALL_CATEGORY = "__all__";
+  const CATEGORY_KEY = "private_chat_categories_v1";
 
   const storedCards = Storage.getCards();
   let cards = normalizeStored(storedCards);
@@ -9,7 +10,38 @@ const CardDeck = (() => {
     Storage.saveCards(cards);
   }
 
+  let categories = loadCategories();
+
+  if (categories.length === 0) {
+    categories = [DEFAULT_CATEGORY];
+    saveCategories();
+  }
+
   let lastKey = "";
+
+  function loadCategories() {
+    try {
+      const raw = localStorage.getItem(CATEGORY_KEY);
+      if (!raw) return [];
+      const parsed = JSON.parse(raw);
+      if (!Array.isArray(parsed)) return [];
+      return parsed
+        .map((item) => String(item == null ? "" : item).trim())
+        .filter(Boolean);
+    } catch (error) {
+      return [];
+    }
+  }
+
+  function saveCategories() {
+    try {
+      localStorage.setItem(CATEGORY_KEY, JSON.stringify(categories));
+      return true;
+    } catch (error) {
+      console.warn("分类保存失败", error);
+      return false;
+    }
+  }
 
   function normalizeStored(value) {
     if (!Array.isArray(value)) {
@@ -56,10 +88,32 @@ const CardDeck = (() => {
     return value || DEFAULT_CATEGORY;
   }
 
+  function ensureCategory(name) {
+    const value = normalizeCategory(name);
+    if (!categories.includes(value)) {
+      categories.push(value);
+      saveCategories();
+    }
+    return value;
+  }
+
   function getCategories() {
-    const set = new Set(cards.map((card) => card.category));
-    set.add(DEFAULT_CATEGORY);
-    return [...set];
+    // 保留顺序：默认分类优先，其余按创建顺序
+    const list = [...categories];
+    if (!list.includes(DEFAULT_CATEGORY)) {
+      list.unshift(DEFAULT_CATEGORY);
+    }
+    return list;
+  }
+
+  function addCategory(name) {
+    const value = normalizeCategory(name);
+    if (categories.includes(value)) {
+      return { ok: false, msg: "这个分类已经存在。" };
+    }
+    categories.push(value);
+    saveCategories();
+    return { ok: true, category: value };
   }
 
   function countByCategory(category) {
@@ -100,7 +154,7 @@ const CardDeck = (() => {
 
   function add(text, category) {
     const value = normalizeText(text);
-    const cat = normalizeCategory(category);
+    const cat = ensureCategory(category);
 
     if (!value) {
       return { ok: false, msg: "不能添加空字卡。" };
@@ -138,7 +192,7 @@ const CardDeck = (() => {
       return { ok: false, msg: "导入内容必须是字符串数组。" };
     }
 
-    const cat = normalizeCategory(category);
+    const cat = ensureCategory(category);
     const valid = list.map(normalizeText).filter(Boolean);
 
     if (valid.length === 0) {
@@ -174,6 +228,7 @@ const CardDeck = (() => {
     getAll,
     getByCategory,
     getCategories,
+    addCategory,
     countByCategory,
     importFromArray
   };
