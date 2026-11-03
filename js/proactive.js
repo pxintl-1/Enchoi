@@ -1,5 +1,5 @@
 const Proactive = (() => {
-  const KEY = "private_chat_proactive_v2";
+  const KEY = "private_chat_proactive_v3";
   const CHECK_INTERVAL_MS = 30 * 1000;
   const DEFAULT_INTERVAL = 10;
 
@@ -12,13 +12,24 @@ const Proactive = (() => {
   function clampInterval(value) {
     const num = Number(value);
     if (!Number.isFinite(num)) return DEFAULT_INTERVAL;
-    return Math.max(0, Math.min(10, Math.round(num)));
+    return Math.max(0, Math.floor(num));
   }
 
   function load() {
     try {
       const raw = localStorage.getItem(KEY);
-      if (!raw) return { ...DEFAULTS };
+      if (!raw) {
+        const legacy = localStorage.getItem("private_chat_proactive_v2");
+        if (legacy) {
+          const parsedLegacy = JSON.parse(legacy);
+          return {
+            enabled: parsedLegacy.enabled === true,
+            intervalMin: clampInterval(parsedLegacy.intervalMin),
+            lastSentAt: Number(parsedLegacy.lastSentAt) || 0
+          };
+        }
+        return { ...DEFAULTS };
+      }
       const parsed = JSON.parse(raw);
       return {
         enabled: parsed.enabled === true,
@@ -82,7 +93,7 @@ const Proactive = (() => {
     return picked && picked.text ? String(picked.text).trim() : "";
   }
 
-  function trySend(force) {
+  function trySend() {
     const text = pickCardText();
     if (!text) return false;
 
@@ -100,12 +111,12 @@ const Proactive = (() => {
     const elapsed = minutesSinceLast();
 
     if (interval === 0) {
-      trySend(true);
+      trySend();
       return;
     }
 
     if (elapsed >= interval) {
-      trySend(true);
+      trySend();
       return;
     }
 
@@ -113,7 +124,7 @@ const Proactive = (() => {
     const chance = Math.max(0.08, progress * 0.5);
 
     if (Math.random() < chance) {
-      trySend(false);
+      trySend();
     }
   }
 
