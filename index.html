@@ -200,13 +200,12 @@
           <span class="hint" id="proactive-status">关闭中</span>
         </div>
 
-        <label class="field-label" for="proactive-interval">最长间隔（0–10 分钟）</label>
+        <label class="field-label" for="proactive-interval">最长间隔（分钟）</label>
         <div class="proactive-interval-row">
           <input
             id="proactive-interval"
             type="number"
             min="0"
-            max="10"
             step="1"
             value="10"
             inputmode="numeric"
@@ -215,7 +214,7 @@
           <span class="proactive-interval-unit">分钟</span>
         </div>
         <p class="hint" id="proactive-interval-value">
-          设为 10 时，10 分钟内至少会收到一条主动消息；设为 0 时每次检查都会尝试发一条。
+          设为多少，就保证在这个分钟数内至少收到一条主动消息；设为 0 时每次检查都会尝试发一条。
         </p>
 
         <span id="proactive-feedback" class="feedback" aria-live="polite"></span>
