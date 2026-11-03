@@ -84,8 +84,6 @@ const Settings = (() => {
     els.proactiveStatus = document.getElementById("proactive-status");
     els.proactiveInterval = document.getElementById("proactive-interval");
     els.proactiveIntervalValue = document.getElementById("proactive-interval-value");
-    els.proactiveChance = document.getElementById("proactive-chance");
-    els.proactiveChanceValue = document.getElementById("proactive-chance-value");
     els.proactiveFeedback = document.getElementById("proactive-feedback");
 
     els.bubbleStyleSelect = document.getElementById("bubble-style-select");
@@ -274,10 +272,6 @@ const Settings = (() => {
     if (els.proactiveInterval) {
       els.proactiveInterval.addEventListener("input", onProactiveIntervalInput);
       els.proactiveInterval.addEventListener("change", onProactiveIntervalChange);
-    }
-    if (els.proactiveChance) {
-      els.proactiveChance.addEventListener("input", onProactiveChanceInput);
-      els.proactiveChance.addEventListener("change", onProactiveChanceChange);
     }
 
     if (els.bubbleStyleSelect) {
@@ -540,24 +534,19 @@ const Settings = (() => {
 
     if (els.proactiveStatus) {
       els.proactiveStatus.textContent = cfg.enabled
-        ? `开启中 · 每 ${cfg.intervalMin} 分钟判断一次`
+        ? `开启中 · 最长 ${cfg.intervalMin} 分钟`
         : "关闭中";
     }
 
     if (els.proactiveInterval) {
-      els.proactiveInterval.value = cfg.intervalMin;
+      els.proactiveInterval.value = String(cfg.intervalMin);
     }
 
     if (els.proactiveIntervalValue) {
-      els.proactiveIntervalValue.textContent = `每 ${cfg.intervalMin} 分钟判断一次`;
-    }
-
-    if (els.proactiveChance) {
-      els.proactiveChance.value = Math.round(cfg.chance * 100);
-    }
-
-    if (els.proactiveChanceValue) {
-      els.proactiveChanceValue.textContent = `每次判断有 ${Math.round(cfg.chance * 100)}% 概率发出`;
+      els.proactiveIntervalValue.textContent =
+        cfg.intervalMin === 0
+          ? "设为 0：每 30 秒检查一次，都会尝试发一条。"
+          : `设为 ${cfg.intervalMin}：${cfg.intervalMin} 分钟内至少会收到一条主动消息。`;
     }
   }
 
@@ -571,31 +560,28 @@ const Settings = (() => {
   }
 
   function onProactiveIntervalInput() {
-    const value = Number(els.proactiveInterval.value) || 5;
+    const raw = Number(els.proactiveInterval.value);
+    const value = Number.isFinite(raw)
+      ? Math.max(0, Math.min(10, Math.round(raw)))
+      : 10;
+
     if (els.proactiveIntervalValue) {
-      els.proactiveIntervalValue.textContent = `每 ${value} 分钟判断一次`;
+      els.proactiveIntervalValue.textContent =
+        value === 0
+          ? "设为 0：每 30 秒检查一次，都会尝试发一条。"
+          : `设为 ${value}：${value} 分钟内至少会收到一条主动消息。`;
     }
   }
 
   function onProactiveIntervalChange() {
-    const value = Number(els.proactiveInterval.value) || 5;
+    const raw = Number(els.proactiveInterval.value);
+    const value = Number.isFinite(raw)
+      ? Math.max(0, Math.min(10, Math.round(raw)))
+      : 10;
+
     Proactive.set({ intervalMin: value });
     renderProactive();
-    showProactiveFeedback(`间隔已改为 ${value} 分钟。`);
-  }
-
-  function onProactiveChanceInput() {
-    const value = Number(els.proactiveChance.value) || 60;
-    if (els.proactiveChanceValue) {
-      els.proactiveChanceValue.textContent = `每次判断有 ${value}% 概率发出`;
-    }
-  }
-
-  function onProactiveChanceChange() {
-    const value = Number(els.proactiveChance.value) || 60;
-    Proactive.set({ chance: value / 100 });
-    renderProactive();
-    showProactiveFeedback(`触发概率已改为 ${value}%。`);
+    showProactiveFeedback(`最长间隔已改为 ${value} 分钟。`);
   }
 
   function refreshCardsView() {
