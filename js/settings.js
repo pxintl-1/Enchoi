@@ -7,6 +7,7 @@ const Settings = (() => {
   let themeFeedbackTimer = null;
   let bubbleFeedbackTimer = null;
   let customCssFeedbackTimer = null;
+  let proactiveFeedbackTimer = null;
   let pickingRole = null;
 
   let activeCategory = CardDeck.ALL_CATEGORY;
@@ -74,6 +75,9 @@ const Settings = (() => {
     els.profileFeedback = document.getElementById("profile-feedback");
 
     els.themeToggle = document.getElementById("theme-toggle");
+    els.settingsThemeToggle = document.getElementById("settings-theme-toggle");
+    els.themeFeedback = document.getElementById("theme-feedback");
+
     els.proactiveToggle = document.getElementById("proactive-toggle");
     els.proactiveStatus = document.getElementById("proactive-status");
     els.proactiveInterval = document.getElementById("proactive-interval");
@@ -81,8 +85,6 @@ const Settings = (() => {
     els.proactiveChance = document.getElementById("proactive-chance");
     els.proactiveChanceValue = document.getElementById("proactive-chance-value");
     els.proactiveFeedback = document.getElementById("proactive-feedback");
-    els.settingsThemeToggle = document.getElementById("settings-theme-toggle");
-    els.themeFeedback = document.getElementById("theme-feedback");
 
     els.bubbleStyleSelect = document.getElementById("bubble-style-select");
     els.bubbleFeedback = document.getElementById("bubble-feedback");
@@ -259,6 +261,19 @@ const Settings = (() => {
     if (els.settingsThemeToggle) {
       els.settingsThemeToggle.addEventListener("click", toggleTheme);
     }
+
+    if (els.proactiveToggle) {
+      els.proactiveToggle.addEventListener("click", toggleProactive);
+    }
+    if (els.proactiveInterval) {
+      els.proactiveInterval.addEventListener("input", onProactiveIntervalInput);
+      els.proactiveInterval.addEventListener("change", onProactiveIntervalChange);
+    }
+    if (els.proactiveChance) {
+      els.proactiveChance.addEventListener("input", onProactiveChanceInput);
+      els.proactiveChance.addEventListener("change", onProactiveChanceChange);
+    }
+
     if (els.bubbleStyleSelect) {
       els.bubbleStyleSelect.value = BubbleStore.get();
       els.bubbleStyleSelect.addEventListener("change", onBubbleStyleChange);
@@ -315,6 +330,7 @@ const Settings = (() => {
     });
 
     updateThemeButton();
+    renderProactive();
     renderContacts();
     updateHomeClock();
   }
@@ -496,6 +512,83 @@ const Settings = (() => {
     }, 3600);
   }
 
+  function showProactiveFeedback(message) {
+    if (!els.proactiveFeedback) return;
+    els.proactiveFeedback.textContent = message;
+    if (proactiveFeedbackTimer) clearTimeout(proactiveFeedbackTimer);
+    proactiveFeedbackTimer = window.setTimeout(() => {
+      els.proactiveFeedback.textContent = "";
+    }, 2200);
+  }
+
+  function renderProactive() {
+    const cfg = Proactive.get();
+
+    if (els.proactiveToggle) {
+      els.proactiveToggle.textContent = cfg.enabled ? "已开启" : "未开启";
+      els.proactiveToggle.classList.toggle("is-on", cfg.enabled);
+    }
+
+    if (els.proactiveStatus) {
+      els.proactiveStatus.textContent = cfg.enabled
+        ? `开启中 · 每 ${cfg.intervalMin} 分钟判断一次`
+        : "关闭中";
+    }
+
+    if (els.proactiveInterval) {
+      els.proactiveInterval.value = cfg.intervalMin;
+    }
+
+    if (els.proactiveIntervalValue) {
+      els.proactiveIntervalValue.textContent = `每 ${cfg.intervalMin} 分钟判断一次`;
+    }
+
+    if (els.proactiveChance) {
+      els.proactiveChance.value = Math.round(cfg.chance * 100);
+    }
+
+    if (els.proactiveChanceValue) {
+      els.proactiveChanceValue.textContent = `每次判断有 ${Math.round(cfg.chance * 100)}% 概率发出`;
+    }
+  }
+
+  function toggleProactive() {
+    const cfg = Proactive.get();
+    Proactive.set({ enabled: !cfg.enabled });
+    renderProactive();
+    showProactiveFeedback(
+      Proactive.get().enabled ? "已开启主动发消息。" : "已关闭主动发消息。"
+    );
+  }
+
+  function onProactiveIntervalInput() {
+    const value = Number(els.proactiveInterval.value) || 5;
+    if (els.proactiveIntervalValue) {
+      els.proactiveIntervalValue.textContent = `每 ${value} 分钟判断一次`;
+    }
+  }
+
+  function onProactiveIntervalChange() {
+    const value = Number(els.proactiveInterval.value) || 5;
+    Proactive.set({ intervalMin: value });
+    renderProactive();
+    showProactiveFeedback(`间隔已改为 ${value} 分钟。`);
+  }
+
+  function onProactiveChanceInput() {
+    const value = Number(els.proactiveChance.value) || 60;
+    if (els.proactiveChanceValue) {
+      els.proactiveChanceValue.textContent = `每次判断有 ${value}% 概率发出`;
+    }
+  }
+
+  function onProactiveChanceChange() {
+    const value = Number(els.proactiveChance.value) || 60;
+    Proactive.set({ chance: value / 100 });
+    renderProactive();
+    showProactiveFeedback(`触发概率已改为 ${value}%。`);
+  }
+
   function refreshCardsView() {
     if (!editingContactId || !Contacts.get(editingContactId)) {
       editingContactId = Contacts.getActiveId();
@@ -511,6 +604,7 @@ const Settings = (() => {
   function refreshSettingsView() {
     renderAvatarSettings();
     fillProfileForm();
+    renderProactive();
     if (els.customCssInput) {
       els.customCssInput.value = CustomCssStore.get();
     }
