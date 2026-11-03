@@ -74,6 +74,13 @@ const Settings = (() => {
     els.profileFeedback = document.getElementById("profile-feedback");
 
     els.themeToggle = document.getElementById("theme-toggle");
+    els.proactiveToggle = document.getElementById("proactive-toggle");
+    els.proactiveStatus = document.getElementById("proactive-status");
+    els.proactiveInterval = document.getElementById("proactive-interval");
+    els.proactiveIntervalValue = document.getElementById("proactive-interval-value");
+    els.proactiveChance = document.getElementById("proactive-chance");
+    els.proactiveChanceValue = document.getElementById("proactive-chance-value");
+    els.proactiveFeedback = document.getElementById("proactive-feedback");
     els.settingsThemeToggle = document.getElementById("settings-theme-toggle");
     els.themeFeedback = document.getElementById("theme-feedback");
 
