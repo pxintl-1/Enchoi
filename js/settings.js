@@ -48,10 +48,12 @@ const Settings = (() => {
     els.cardsOwnerSelect = document.getElementById("cards-owner-select");
     els.categorySelect = document.getElementById("card-category-select");
     els.saveCategorySelect = document.getElementById("save-category-select");
+
+    els.exportSheet = document.getElementById("export-sheet");
+    els.exportSheetContact = document.getElementById("export-sheet-contact");
+    els.exportAllBtn = document.getElementById("export-all-btn");
+    els.exportSelectedBtn = document.getElementById("export-selected-btn");
     els.exportCategoryList = document.getElementById("export-category-list");
-    els.exportSelectAll = document.getElementById("export-select-all");
-    els.exportSelectNone = document.getElementById("export-select-none");
-    els.exportSelectedHint = document.getElementById("export-selected-hint");
 
     els.newCardInput = document.getElementById("new-card-input");
     els.saveCardBtn = document.getElementById("save-card-btn");
@@ -214,37 +216,41 @@ const Settings = (() => {
       els.cardsOwnerSelect.addEventListener("change", onCardsOwnerChange);
     }
 
-    if (els.exportCategoryList) {
-      els.exportCategoryList.addEventListener("change", (event) => {
+    if (els.exportCardsBtn) {
+      els.exportCardsBtn.addEventListener("click", openExportSheet);
+    }
+    if (els.exportAllBtn) {
+      els.exportAllBtn.addEventListener("click", () => {
+        exportCards("all");
+        closeExportSheet();
+      });
+    }
+    if (els.exportSelectedBtn) {
+      els.exportSelectedBtn.addEventListener("click", () => {
+        if (exportSelected.size === 0) {
+          showTransferFeedback("先勾选至少一个分类。", true);
+          return;
+        }
+        exportCards("selected");
+        closeExportSheet();
+      });
+    }
+    if (els.exportSheet) {
+      els.exportSheet.addEventListener("click", (event) => {
+        if (event.target.closest("[data-close-export]")) {
+          closeExportSheet();
+        }
         const input = event.target.closest("[data-export-category]");
         if (!input) return;
         const name = input.dataset.exportCategory;
-
         if (input.checked) {
           exportSelected.add(name);
         } else {
           exportSelected.delete(name);
         }
-
-        updateExportSelectedHint();
-      });
-    }
-    if (els.exportSelectAll) {
-      els.exportSelectAll.addEventListener("click", () => {
-        CardDeck.getCategories().forEach((cat) => exportSelected.add(cat));
-        renderExportCategoryList();
-      });
-    }
-    if (els.exportSelectNone) {
-      els.exportSelectNone.addEventListener("click", () => {
-        exportSelected.clear();
-        renderExportCategoryList();
       });
     }
 
-    if (els.exportCardsBtn) {
-      els.exportCardsBtn.addEventListener("click", exportCards);
-    }
     if (els.importCardsBtn) {
       els.importCardsBtn.addEventListener("click", () => {
         els.importCardsFile.value = "";
@@ -368,7 +374,6 @@ const Settings = (() => {
     renderContacts();
     renderCategorySelect();
     renderSaveCategorySelect();
-    renderExportCategoryList();
     renderCards();
   }
 
@@ -384,7 +389,6 @@ const Settings = (() => {
     exportSelected = new Set();
     renderCategorySelect();
     renderSaveCategorySelect();
-    renderExportCategoryList();
     renderCards();
   }
 
@@ -597,7 +601,6 @@ const Settings = (() => {
     renderCardsOwnerSelect();
     renderCategorySelect();
     renderSaveCategorySelect();
-    renderExportCategoryList();
     renderCards();
   }
 
@@ -608,6 +611,27 @@ const Settings = (() => {
     if (els.customCssInput) {
       els.customCssInput.value = CustomCssStore.get();
     }
+  }
+
+  function openExportSheet() {
+    if (!els.exportSheet) return;
+
+    const contact = editingContact();
+    if (els.exportSheetContact) {
+      els.exportSheetContact.textContent = `当前好友：${contact.name || "TA"}`;
+    }
+
+    exportSelected = new Set();
+    renderExportCategoryList();
+
+    els.exportSheet.hidden = false;
+    document.body.classList.add("export-sheet-open");
+  }
+
+  function closeExportSheet() {
+    if (!els.exportSheet) return;
+    els.exportSheet.hidden = true;
+    document.body.classList.remove("export-sheet-open");
   }
 
   function renderExportCategoryList() {
@@ -622,7 +646,6 @@ const Settings = (() => {
     if (categories.length === 0) {
       els.exportCategoryList.innerHTML =
         '<p class="hint">当前好友还没有任何分类。</p>';
-      updateExportSelectedHint();
       return;
     }
 
@@ -637,36 +660,25 @@ const Settings = (() => {
         `;
       })
       .join("");
-
-    updateExportSelectedHint();
   }
 
-  function updateExportSelectedHint() {
-    if (!els.exportSelectedHint) return;
-
-    if (exportSelected.size === 0) {
-      els.exportSelectedHint.textContent = "未选择时默认导出全部分类。";
-      return;
-    }
-
-    els.exportSelectedHint.textContent = `已选择：${[...exportSelected].join(
-      "、"
-    )}`;
-  }
-
-  function exportCards() {
+  function exportCards(mode) {
     const contact = editingContact();
     const all = CardDeck.getAll();
 
-    const selected = [...exportSelected];
-    const cards =
-      selected.length === 0
-        ? all
-        : all.filter((card) => selected.includes(card.category));
+    let selected = [];
+    let cards = [];
+
+    if (mode === "all") {
+      cards = all;
+    } else {
+      selected = [...exportSelected];
+      cards = all.filter((card) => selected.includes(card.category));
+    }
 
     if (cards.length === 0) {
       showTransferFeedback(
-        selected.length === 0
+        mode === "all"
           ? "当前好友字卡库是空的，没有可导出的内容。"
           : "所选分类下没有字卡。",
         true
@@ -678,7 +690,7 @@ const Settings = (() => {
       type: "private-chat-cards",
       version: 1,
       contactName: contact.name || "TA",
-      categories: selected.length === 0 ? "全部分类" : selected,
+      categories: mode === "all" ? "全部分类" : selected,
       exportedAt: new Date().toISOString(),
       cards
     };
@@ -690,7 +702,7 @@ const Settings = (() => {
       const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
       const suffix =
-        selected.length === 0
+        mode === "all"
           ? "all"
           : selected.map((s) => s.replace(/\s+/g, "_")).join("_");
       link.href = url;
@@ -703,7 +715,7 @@ const Settings = (() => {
       URL.revokeObjectURL(url);
       showTransferFeedback(
         `已导出 ${cards.length} 张字卡（${
-          selected.length === 0 ? "全部分类" : selected.join("、")
+          mode === "all" ? "全部分类" : selected.join("、")
         }）。`
       );
     } catch (error) {
@@ -796,7 +808,6 @@ const Settings = (() => {
 
       renderCategorySelect();
       renderSaveCategorySelect();
-      renderExportCategoryList();
       renderCards();
 
       const skipped = list.length - added;
@@ -1083,7 +1094,6 @@ const Settings = (() => {
 
     renderCategorySelect();
     renderSaveCategorySelect();
-    renderExportCategoryList();
     renderCards();
     showCardFeedback(`已更新为「${result.category}」下的字卡。`);
   }
@@ -1101,7 +1111,6 @@ const Settings = (() => {
     }
     renderCategorySelect();
     renderSaveCategorySelect();
-    renderExportCategoryList();
     renderCards();
     showCardFeedback("字卡已删除。");
   }
@@ -1131,7 +1140,6 @@ const Settings = (() => {
     els.newCardInput.value = "";
     renderCategorySelect();
     renderSaveCategorySelect();
-    renderExportCategoryList();
     renderCards();
 
     const skipped = lines.length - result.added;
@@ -1169,7 +1177,6 @@ const Settings = (() => {
     els.newCategoryInput.value = "";
     renderCategorySelect();
     renderSaveCategorySelect();
-    renderExportCategoryList();
     renderCards();
     showCardFeedback(`已创建分类「${result.category}」。`);
   }
