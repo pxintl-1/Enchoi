@@ -1580,3 +1580,6 @@ body.keyboard-open .page-header {
 :root[data-theme="light"] .export-sheet__panel {
   box-shadow: 0 -24px 80px rgba(80, 60, 110, 0.18);
 }
+body.export-sheet-open {
+  overflow: hidden;
+}
