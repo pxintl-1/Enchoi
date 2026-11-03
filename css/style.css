@@ -1112,3 +1112,14 @@ body.keyboard-open .page-header {
 :root[data-theme="light"] .app-icon__glyph {
   box-shadow: 0 10px 24px rgba(143, 111, 176, 0.18);
 }
+.proactive-range {
+  width: 100%;
+  margin: 6px 0 10px;
+  accent-color: var(--accent-color);
+}
+
+#proactive-toggle.is-on {
+  border-color: rgba(var(--accent-color-rgb), 0.6);
+  background: var(--accent-soft);
+  color: var(--text-primary);
+}
