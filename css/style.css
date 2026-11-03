@@ -1499,3 +1499,32 @@ body.keyboard-open .chat-header,
 body.keyboard-open .page-header {
   padding-top: 6px;
 }
+.proactive-interval-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 6px 0 10px;
+}
+
+.proactive-interval-input {
+  width: 90px;
+  padding: 10px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  outline: none;
+  background: var(--input-bg);
+  color: var(--text-primary);
+  font-size: 16px;
+  text-align: center;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.proactive-interval-input:focus {
+  border-color: rgba(var(--accent-color-rgb), 0.5);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+.proactive-interval-unit {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
