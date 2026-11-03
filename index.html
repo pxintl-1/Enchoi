@@ -148,37 +148,43 @@
           </div>
         </section>
 
-        <section class="card-section">
-          <h2 class="section-title">导出 / 导入</h2>
-          <p class="hint">
-            导出可勾选一个或多个分类；不勾选时默认导出全部分类。
-            导入会自动创建 JSON 里出现的分类，重复字卡自动跳过。
-          </p>
+  <!-- 导出选择底部弹窗 -->
+  <div id="export-sheet" class="export-sheet" hidden>
+    <div class="export-sheet__backdrop" data-close-export></div>
+    <section class="export-sheet__panel" role="dialog" aria-modal="true" aria-labelledby="export-sheet-title">
+      <div class="export-sheet__handle"></div>
+      <header class="export-sheet__header">
+        <h2 id="export-sheet-title">导出字卡</h2>
+        <button class="small-btn" type="button" data-close-export>关闭</button>
+      </header>
 
-          <label class="field-label">导出分类（可多选）</label>
-          <div class="actions">
-            <button id="export-select-all" class="small-btn" type="button">全选</button>
-            <button id="export-select-none" class="small-btn" type="button">清空</button>
-          </div>
-          <div id="export-category-list" class="export-category-list"></div>
-          <p class="hint" id="export-selected-hint">未选择时默认导出全部分类。</p>
+      <p class="hint" id="export-sheet-contact">当前好友：TA</p>
 
-          <div class="actions">
-            <button id="export-cards-btn" class="small-btn" type="button">导出字卡</button>
-            <button id="import-cards-btn" class="small-btn" type="button">导入字卡</button>
-            <span id="transfer-feedback" class="feedback" aria-live="polite"></span>
-          </div>
-          <input id="import-cards-file" type="file" accept="application/json,.json" hidden>
-        </section>
+      <div class="export-sheet__options">
+        <button id="export-all-btn" class="export-option" type="button">
+          <span class="export-option__icon">🗂️</span>
+          <span class="export-option__text">
+            <strong>全部导出</strong>
+            <small>导出当前好友的所有分类和字卡</small>
+          </span>
+        </button>
 
-        <section class="card-section">
-          <h2 class="section-title">已保存的字卡</h2>
-          <div id="category-tabs" class="category-tabs"></div>
-          <ul id="card-list" class="card-list"></ul>
-          <p id="card-empty" class="hint" hidden>当前分类下还没有字卡。</p>
-        </section>
-      </main>
+        <div class="export-option export-option--group">
+          <span class="export-option__icon">🏷️</span>
+          <span class="export-option__text">
+            <strong>按分类导出</strong>
+            <small>只导出所选分类下的字卡</small>
+          </span>
+        </div>
+
+        <div id="export-category-list" class="export-category-list"></div>
+
+        <button id="export-selected-btn" class="primary-btn export-sheet__confirm" type="button">
+          导出所选分类
+        </button>
+      </div>
     </section>
+  </div>
 
     <!-- 设置视图 -->
     <section id="view-settings" class="view" hidden>
