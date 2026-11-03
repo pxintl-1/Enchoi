@@ -220,6 +220,13 @@ const Chat = (() => {
     cardCategory = category || CardDeck.ALL_CATEGORY;
   }
 
+  function appendPartnerMessage(text) {
+    const value = String(text == null ? "" : text).trim();
+    if (!value) return;
+
+    append("ta", value);
+  }
+
   function refreshAppearance() {
     renderHeader();
     applyBackground();
@@ -232,6 +239,7 @@ const Chat = (() => {
     clear,
     getHistory,
     setCardCategory,
+    appendPartnerMessage,
     refreshAppearance,
     refreshAvatars: refreshAppearance
   };
