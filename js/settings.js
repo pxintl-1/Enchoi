@@ -561,9 +561,7 @@ const Settings = (() => {
 
   function onProactiveIntervalInput() {
     const raw = Number(els.proactiveInterval.value);
-    const value = Number.isFinite(raw)
-      ? Math.max(0, Math.min(10, Math.round(raw)))
-      : 10;
+    const value = Number.isFinite(raw) ? Math.max(0, Math.floor(raw)) : 10;
 
     if (els.proactiveIntervalValue) {
       els.proactiveIntervalValue.textContent =
@@ -575,9 +573,7 @@ const Settings = (() => {
 
   function onProactiveIntervalChange() {
     const raw = Number(els.proactiveInterval.value);
-    const value = Number.isFinite(raw)
-      ? Math.max(0, Math.min(10, Math.round(raw)))
-      : 10;
+    const value = Number.isFinite(raw) ? Math.max(0, Math.floor(raw)) : 10;
 
     Proactive.set({ intervalMin: value });
     renderProactive();
