@@ -1092,3 +1092,23 @@ body.keyboard-open .chat-header,
 body.keyboard-open .page-header {
   padding-top: 6px;
 }
+/* ===== 主屏图片图标 ===== */
+.app-icon__glyph {
+  overflow: hidden;
+  padding: 0;
+  background: none;
+  border: none;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.28);
+}
+
+.app-icon__img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: inherit;
+}
+
+:root[data-theme="light"] .app-icon__glyph {
+  box-shadow: 0 10px 24px rgba(143, 111, 176, 0.18);
+}
