@@ -191,8 +191,8 @@
 
         <h2 class="section-title">主动发消息</h2>
         <p class="hint">
-          开启后，TA 会按设定间隔，从当前好友的字卡里随机抽一条主动发给你。
-          只在聊天页可见且页面在前台时触发。
+          开启后，TA 会在任意页面主动发一条字卡给你。
+          页面在前台时生效；页面切到后台会暂停，回到前台继续。
         </p>
 
         <div class="actions">
@@ -200,13 +200,23 @@
           <span class="hint" id="proactive-status">关闭中</span>
         </div>
 
-        <label class="field-label" for="proactive-interval">间隔（分钟）</label>
-        <input id="proactive-interval" type="range" min="1" max="180" step="1" value="5" class="proactive-range">
-        <p class="hint" id="proactive-interval-value">每 5 分钟判断一次</p>
-
-        <label class="field-label" for="proactive-chance">触发概率</label>
-        <input id="proactive-chance" type="range" min="5" max="100" step="5" value="60" class="proactive-range">
-        <p class="hint" id="proactive-chance-value">每次判断有 60% 概率发出</p>
+        <label class="field-label" for="proactive-interval">最长间隔（0–10 分钟）</label>
+        <div class="proactive-interval-row">
+          <input
+            id="proactive-interval"
+            type="number"
+            min="0"
+            max="10"
+            step="1"
+            value="10"
+            inputmode="numeric"
+            class="proactive-interval-input"
+          >
+          <span class="proactive-interval-unit">分钟</span>
+        </div>
+        <p class="hint" id="proactive-interval-value">
+          设为 10 时，10 分钟内至少会收到一条主动消息；设为 0 时每次检查都会尝试发一条。
+        </p>
 
         <span id="proactive-feedback" class="feedback" aria-live="polite"></span>
 
