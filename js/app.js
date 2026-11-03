@@ -3,6 +3,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   Chat.init();
   Settings.init();
+  Proactive.init();
 
   const active = Contacts.getActive();
   Chat.setContact(active.id);
