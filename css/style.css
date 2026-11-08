@@ -1596,3 +1596,29 @@ body.keyboard-open .page-header {
 :root[data-theme="light"] #export-category-list input[type="checkbox"]:checked::after {
   color: #ffffff;
 }
+.composer-force-btn {
+  flex: 0 0 auto;
+  width: 40px;
+  height: 40px;
+  min-width: 40px;
+  padding: 0;
+  border: 1px solid var(--border-color);
+  border-radius: 50%;
+  background: var(--panel-bg);
+  color: var(--accent-color);
+  font-size: 13px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s ease, border-color 0.15s ease, transform 0.1s ease;
+}
+
+.composer-force-btn:hover {
+  background: var(--hover-bg);
+  border-color: rgba(var(--accent-color-rgb), 0.45);
+}
+
+.composer-force-btn:active {
+  transform: scale(0.94);
+}
