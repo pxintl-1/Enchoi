@@ -238,13 +238,21 @@ const Settings = (() => {
         if (event.target.closest("[data-close-export]")) {
           closeExportSheet();
         }
+
         const input = event.target.closest("[data-export-category]");
         if (!input) return;
+
         const name = input.dataset.exportCategory;
+
         if (input.checked) {
           exportSelected.add(name);
         } else {
           exportSelected.delete(name);
+        }
+
+        const label = input.closest("label");
+        if (label) {
+          label.classList.toggle("is-checked", input.checked);
         }
       });
     }
@@ -638,10 +646,10 @@ const Settings = (() => {
 
     els.exportCategoryList.innerHTML = categories
       .map((cat) => {
-        const checked = exportSelected.has(cat) ? " checked" : "";
+        const checked = exportSelected.has(cat);
         return `
-          <label>
-            <input type="checkbox" data-export-category="${escapeAttr(cat)}"${checked}>
+          <label class="${checked ? "is-checked" : ""}">
+            <input type="checkbox" data-export-category="${escapeAttr(cat)}"${checked ? " checked" : ""}>
             <span>${escapeHtml(cat)}</span>
           </label>
         `;
