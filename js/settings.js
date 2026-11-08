@@ -82,7 +82,6 @@ const Settings = (() => {
 
     els.proactiveToggle = document.getElementById("proactive-toggle");
     els.proactiveSendNow = document.getElementById("proactive-send-now");
-    els.composerForceSend = document.getElementById("composer-force-send");
     els.proactiveStatus = document.getElementById("proactive-status");
     els.proactiveInterval = document.getElementById("proactive-interval");
     els.proactiveIntervalValue = document.getElementById("proactive-interval-value");
@@ -102,6 +101,14 @@ const Settings = (() => {
     els.backgroundFileInput = document.getElementById("background-file-input");
     els.pickBackgroundBtn = document.getElementById("pick-background-btn");
     els.clearBackgroundBtn = document.getElementById("clear-background-btn");
+
+    els.composerForceSend = document.getElementById("composer-force-send");
+    els.composerBatchOpen = document.getElementById("composer-batch-open");
+    els.batchSendSheet = document.getElementById("batch-send-sheet");
+    els.batchSendInput = document.getElementById("batch-send-input");
+    els.batchSendConfirm = document.getElementById("batch-send-confirm");
+    els.batchSendClear = document.getElementById("batch-send-clear");
+    els.batchSendFeedback = document.getElementById("batch-send-feedback");
 
     Home.init();
 
@@ -279,12 +286,35 @@ const Settings = (() => {
     if (els.proactiveToggle) {
       els.proactiveToggle.addEventListener("click", toggleProactive);
     }
-    if (els.composerForceSend) {
-      els.composerForceSend.addEventListener("click", sendProactiveNow);
+    if (els.proactiveSendNow) {
+      els.proactiveSendNow.addEventListener("click", sendProactiveNow);
     }
     if (els.proactiveInterval) {
       els.proactiveInterval.addEventListener("input", onProactiveIntervalInput);
       els.proactiveInterval.addEventListener("change", onProactiveIntervalChange);
+    }
+
+    if (els.composerForceSend) {
+      els.composerForceSend.addEventListener("click", sendProactiveNow);
+    }
+    if (els.composerBatchOpen) {
+      els.composerBatchOpen.addEventListener("click", openBatchSendSheet);
+    }
+    if (els.batchSendSheet) {
+      els.batchSendSheet.addEventListener("click", (event) => {
+        if (event.target.closest("[data-close-batch]")) {
+          closeBatchSendSheet();
+        }
+      });
+    }
+    if (els.batchSendConfirm) {
+      els.batchSendConfirm.addEventListener("click", sendBatchFromSheet);
+    }
+    if (els.batchSendClear) {
+      els.batchSendClear.addEventListener("click", () => {
+        if (els.batchSendInput) els.batchSendInput.value = "";
+        showBatchSendFeedback("");
+      });
     }
 
     if (els.bubbleStyleSelect) {
@@ -599,6 +629,75 @@ const Settings = (() => {
     showProactiveFeedback(
       `已强制发送一条：「${text.slice(0, 18)}${text.length > 18 ? "…" : ""}」`
     );
+  }
+
+  function openBatchSendSheet() {
+    if (!els.batchSendSheet) return;
+    if (els.batchSendInput) els.batchSendInput.value = "";
+    showBatchSendFeedback("");
+    els.batchSendSheet.hidden = false;
+    document.body.classList.add("export-sheet-open");
+    window.setTimeout(() => {
+      if (els.batchSendInput) els.batchSendInput.focus();
+    }, 60);
+  }
+
+  function closeBatchSendSheet() {
+    if (!els.batchSendSheet) return;
+    els.batchSendSheet.hidden = true;
+    document.body.classList.remove("export-sheet-open");
+  }
+
+  function showBatchSendFeedback(message, isError) {
+    if (!els.batchSendFeedback) return;
+    els.batchSendFeedback.textContent = message;
+    els.batchSendFeedback.classList.toggle("is-error", Boolean(isError));
+  }
+
+  function sendBatchFromSheet() {
+    if (!els.batchSendInput) return;
+
+    const raw = els.batchSendInput.value;
+    if (!raw.trim()) {
+      showBatchSendFeedback("先写点内容再发送。", true);
+      return;
+    }
+
+    const lines = raw
+      .split(/\r?\n/)
+      .map((line) => line.trim())
+      .filter(Boolean);
+
+    if (lines.length === 0) {
+      showBatchSendFeedback("没有找到有效消息。", true);
+      return;
+    }
+
+    let index = 0;
+    const total = lines.length;
+
+    function sendNext() {
+      if (index >= total) {
+        closeBatchSendSheet();
+        return;
+      }
+
+      const text = lines[index];
+      index += 1;
+
+      Chat.sendUserMessage(text);
+      showBatchSendFeedback(`正在发送 ${index} / ${total}…`);
+
+      if (index < total) {
+        window.setTimeout(sendNext, 350);
+      } else {
+        window.setTimeout(() => {
+          closeBatchSendSheet();
+        }, 350);
+      }
+    }
+
+    sendNext();
   }
 
   function onProactiveIntervalInput() {
