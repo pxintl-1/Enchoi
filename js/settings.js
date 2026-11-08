@@ -81,6 +81,7 @@ const Settings = (() => {
     els.themeFeedback = document.getElementById("theme-feedback");
 
     els.proactiveToggle = document.getElementById("proactive-toggle");
+    els.proactiveSendNow = document.getElementById("proactive-send-now");
     els.proactiveStatus = document.getElementById("proactive-status");
     els.proactiveInterval = document.getElementById("proactive-interval");
     els.proactiveIntervalValue = document.getElementById("proactive-interval-value");
@@ -276,6 +277,9 @@ const Settings = (() => {
 
     if (els.proactiveToggle) {
       els.proactiveToggle.addEventListener("click", toggleProactive);
+    }
+    if (els.proactiveSendNow) {
+      els.proactiveSendNow.addEventListener("click", sendProactiveNow);
     }
     if (els.proactiveInterval) {
       els.proactiveInterval.addEventListener("input", onProactiveIntervalInput);
@@ -564,6 +568,35 @@ const Settings = (() => {
     renderProactive();
     showProactiveFeedback(
       Proactive.get().enabled ? "已开启主动发消息。" : "已关闭主动发消息。"
+    );
+  }
+
+  function sendProactiveNow() {
+    const contact = Contacts.getActive();
+    if (!contact) {
+      showProactiveFeedback("还没有好友，先添加一个。");
+      return;
+    }
+
+    CardDeck.loadFor(contact.id);
+    const cards = CardDeck.getAll();
+
+    if (cards.length === 0) {
+      showProactiveFeedback("当前好友字卡库是空的，先添加一些字卡。");
+      return;
+    }
+
+    const picked = cards[Math.floor(Math.random() * cards.length)];
+    const text = picked && picked.text ? String(picked.text).trim() : "";
+
+    if (!text) {
+      showProactiveFeedback("抽取到的字卡没有内容。");
+      return;
+    }
+
+    Chat.appendPartnerMessage(text);
+    showProactiveFeedback(
+      `已强制发送一条：「${text.slice(0, 18)}${text.length > 18 ? "…" : ""}」`
     );
   }
 
