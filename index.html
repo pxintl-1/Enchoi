@@ -301,33 +301,6 @@
   <input id="avatar-file-input" type="file" accept="image/*" hidden>
   <input id="background-file-input" type="file" accept="image/*" hidden>
 
-    <!-- 批量发送弹窗 -->
-  <div id="batch-send-sheet" class="export-sheet" hidden>
-    <div class="export-sheet__backdrop" data-close-batch></div>
-    <section class="export-sheet__panel" role="dialog" aria-modal="true" aria-labelledby="batch-send-title">
-      <div class="export-sheet__handle"></div>
-      <header class="export-sheet__header">
-        <h2 id="batch-send-title">一次发送多条</h2>
-        <button class="small-btn" type="button" data-close-batch>关闭</button>
-      </header>
-
-      <p class="hint">一行视为一条消息，按从上到下的顺序发出。空行自动忽略。</p>
-
-      <textarea
-        id="batch-send-input"
-        rows="8"
-        class="batch-send-input"
-        placeholder="第一句……&#10;第二句……&#10;第三句……"
-      ></textarea>
-
-      <div class="actions">
-        <button id="batch-send-confirm" class="primary-btn" type="button">按顺序发送</button>
-        <button id="batch-send-clear" class="small-btn" type="button">清空</button>
-        <span id="batch-send-feedback" class="feedback" aria-live="polite"></span>
-      </div>
-    </section>
-  </div>
-
   <!-- 导出选择底部弹窗 -->
   <div id="export-sheet" class="export-sheet" hidden>
     <div class="export-sheet__backdrop" data-close-export></div>
@@ -362,6 +335,33 @@
         <button id="export-selected-btn" class="primary-btn export-sheet__confirm" type="button">
           导出所选分类
         </button>
+      </div>
+    </section>
+  </div>
+
+  <!-- 批量发送弹窗 -->
+  <div id="batch-send-sheet" class="export-sheet" hidden>
+    <div class="export-sheet__backdrop" data-close-batch></div>
+    <section class="export-sheet__panel" role="dialog" aria-modal="true" aria-labelledby="batch-send-title">
+      <div class="export-sheet__handle"></div>
+      <header class="export-sheet__header">
+        <h2 id="batch-send-title">一次发送多条</h2>
+        <button class="small-btn" type="button" data-close-batch>关闭</button>
+      </header>
+
+      <p class="hint">一行视为一条消息，按从上到下的顺序发出。空行自动忽略。</p>
+
+      <textarea
+        id="batch-send-input"
+        rows="8"
+        class="batch-send-input"
+        placeholder="第一句……&#10;第二句……&#10;第三句……"
+      ></textarea>
+
+      <div class="actions">
+        <button id="batch-send-confirm" class="primary-btn" type="button">按顺序发送</button>
+        <button id="batch-send-clear" class="small-btn" type="button">清空</button>
+        <span id="batch-send-feedback" class="feedback" aria-live="polite"></span>
       </div>
     </section>
   </div>
