@@ -673,6 +673,11 @@ const Settings = (() => {
       return;
     }
 
+    if (typeof Chat.sendUserMessage !== "function") {
+      showBatchSendFeedback("发送失败：Chat.sendUserMessage 未加载。", true);
+      return;
+    }
+
     let index = 0;
     const total = lines.length;
 
@@ -685,8 +690,14 @@ const Settings = (() => {
       const text = lines[index];
       index += 1;
 
-      Chat.sendUserMessage(text);
-      showBatchSendFeedback(`正在发送 ${index} / ${total}…`);
+      try {
+        Chat.sendUserMessage(text);
+        showBatchSendFeedback(`正在发送 ${index} / ${total}…`);
+      } catch (error) {
+        console.warn("批量发送失败", error);
+        showBatchSendFeedback("发送失败，请检查控制台报错。", true);
+        return;
+      }
 
       if (index < total) {
         window.setTimeout(sendNext, 350);
