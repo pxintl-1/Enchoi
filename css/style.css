@@ -1622,3 +1622,27 @@ body.keyboard-open .page-header {
 .composer-force-btn:active {
   transform: scale(0.94);
 }
+.batch-send-input {
+  width: 100%;
+  max-width: 100%;
+  min-height: 160px;
+  padding: 12px 14px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  outline: none;
+  background: var(--input-bg);
+  color: var(--text-primary);
+  font-size: 15px;
+  line-height: 1.6;
+  resize: vertical;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.batch-send-input:focus {
+  border-color: rgba(var(--accent-color-rgb), 0.5);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+#batch-send-sheet .actions {
+  margin-top: 14px;
+}
