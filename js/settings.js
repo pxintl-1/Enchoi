@@ -82,6 +82,7 @@ const Settings = (() => {
 
     els.proactiveToggle = document.getElementById("proactive-toggle");
     els.proactiveSendNow = document.getElementById("proactive-send-now");
+    els.composerForceSend = document.getElementById("composer-force-send");
     els.proactiveStatus = document.getElementById("proactive-status");
     els.proactiveInterval = document.getElementById("proactive-interval");
     els.proactiveIntervalValue = document.getElementById("proactive-interval-value");
@@ -278,8 +279,8 @@ const Settings = (() => {
     if (els.proactiveToggle) {
       els.proactiveToggle.addEventListener("click", toggleProactive);
     }
-    if (els.proactiveSendNow) {
-      els.proactiveSendNow.addEventListener("click", sendProactiveNow);
+    if (els.composerForceSend) {
+      els.composerForceSend.addEventListener("click", sendProactiveNow);
     }
     if (els.proactiveInterval) {
       els.proactiveInterval.addEventListener("input", onProactiveIntervalInput);
