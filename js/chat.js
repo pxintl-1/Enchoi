@@ -170,17 +170,12 @@ const Chat = (() => {
     els.status.textContent = replying ? "正在输入…" : "在线";
   }
 
-  function send() {
-    const text = els.input.value.trim();
-    if (!text || replying) return;
-
-    els.input.value = "";
-    resizeInput();
-    append("user", text);
+  function scheduleReply() {
+    if (replyTimer) clearTimeout(replyTimer);
 
     replying = true;
     updateStatus();
-    els.send.disabled = true;
+    if (els.send) els.send.disabled = true;
 
     const delay =
       window.APP_CONFIG.replyDelayMin +
@@ -194,8 +189,26 @@ const Chat = (() => {
       replying = false;
       replyTimer = null;
       updateStatus();
-      els.send.disabled = false;
+      if (els.send) els.send.disabled = false;
     }, delay);
+  }
+
+  function send() {
+    const text = els.input.value.trim();
+    if (!text || replying) return;
+
+    els.input.value = "";
+    resizeInput();
+    append("user", text);
+    scheduleReply();
+  }
+
+  function sendUserMessage(text) {
+    const value = String(text == null ? "" : text).trim();
+    if (!value) return;
+
+    append("user", value);
+    scheduleReply();
   }
 
   function clear() {
@@ -240,6 +253,7 @@ const Chat = (() => {
     getHistory,
     setCardCategory,
     appendPartnerMessage,
+    sendUserMessage,
     refreshAppearance,
     refreshAvatars: refreshAppearance
   };
