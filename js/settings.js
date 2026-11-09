@@ -92,6 +92,8 @@ const Settings = (() => {
 
     els.multiReplyChance = document.getElementById("multi-reply-chance");
     els.multiReplyChanceValue = document.getElementById("multi-reply-chance-value");
+    els.multiReplyGap = document.getElementById("multi-reply-gap");
+    els.multiReplyGapValue = document.getElementById("multi-reply-gap-value");
     els.multiReplyFeedback = document.getElementById("multi-reply-feedback");
 
     els.bubbleStyleSelect = document.getElementById("bubble-style-select");
@@ -308,6 +310,10 @@ const Settings = (() => {
     if (els.multiReplyChance) {
       els.multiReplyChance.addEventListener("input", onMultiReplyInput);
       els.multiReplyChance.addEventListener("change", onMultiReplyChange);
+    }
+    if (els.multiReplyGap) {
+      els.multiReplyGap.addEventListener("input", onMultiReplyGapInput);
+      els.multiReplyGap.addEventListener("change", onMultiReplyGapChange);
     }
 
     if (els.composerForceSend) {
@@ -682,8 +688,21 @@ const Settings = (() => {
     }
   }
 
+  function readMultiGap() {
+    try {
+      const raw = localStorage.getItem("private_chat_multi_reply_gap_v1");
+      if (raw === null) return 0.5;
+      const num = Number(raw);
+      if (!Number.isFinite(num)) return 0.5;
+      return Math.max(0.2, Math.min(5, num));
+    } catch (error) {
+      return 0.5;
+    }
+  }
+
   function renderMultiReply() {
     const value = readMultiChance();
+    const gap = readMultiGap();
 
     if (els.multiReplyChance) {
       els.multiReplyChance.value = String(value);
@@ -694,6 +713,14 @@ const Settings = (() => {
         value === 0
           ? "设为 0：TA 永远只发 1 句。"
           : `每次回复有 ${value}% 概率发 2–3 句。`;
+    }
+
+    if (els.multiReplyGap) {
+      els.multiReplyGap.value = String(gap);
+    }
+
+    if (els.multiReplyGapValue) {
+      els.multiReplyGapValue.textContent = `多句模式下，每句之间至少停 ${gap} 秒；会在基础上再加 0–0.5 秒随机延迟。`;
     }
   }
 
@@ -726,6 +753,34 @@ const Settings = (() => {
 
     renderMultiReply();
     showMultiReplyFeedback(`多句概率已改为 ${value}%。`);
+  }
+
+  function onMultiReplyGapInput() {
+    const raw = Number(els.multiReplyGap.value);
+    const value = Number.isFinite(raw)
+      ? Math.max(0.2, Math.min(5, raw))
+      : 0.5;
+
+    if (els.multiReplyGapValue) {
+      els.multiReplyGapValue.textContent = `多句模式下，每句之间至少停 ${value} 秒；会在基础上再加 0–0.5 秒随机延迟。`;
+    }
+  }
+
+  function onMultiReplyGapChange() {
+    const raw = Number(els.multiReplyGap.value);
+    const value = Number.isFinite(raw)
+      ? Math.max(0.2, Math.min(5, raw))
+      : 0.5;
+
+    try {
+      localStorage.setItem("private_chat_multi_reply_gap_v1", String(value));
+    } catch (error) {
+      showMultiReplyFeedback("保存失败，可能是存储空间不足。", true);
+      return;
+    }
+
+    renderMultiReply();
+    showMultiReplyFeedback(`多句间隔已改为 ${value} 秒。`);
   }
 
   function openBatchSendSheet() {
