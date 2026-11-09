@@ -6,6 +6,21 @@ const Chat = (() => {
   let cardCategory = CardDeck.ALL_CATEGORY;
   let contactId = "default";
 
+  const MULTI_KEY = "private_chat_multi_reply_v1";
+  const MULTI_DEFAULT = 30;
+
+  function loadMultiChance() {
+    try {
+      const raw = localStorage.getItem(MULTI_KEY);
+      if (raw === null) return MULTI_DEFAULT;
+      const num = Number(raw);
+      if (!Number.isFinite(num)) return MULTI_DEFAULT;
+      return Math.max(0, Math.min(100, Math.round(num)));
+    } catch (error) {
+      return MULTI_DEFAULT;
+    }
+  }
+
   function init() {
     els.list = document.getElementById("message-list");
     els.input = document.getElementById("message-input");
@@ -170,6 +185,32 @@ const Chat = (() => {
     els.status.textContent = replying ? "正在输入…" : "在线";
   }
 
+  function baseDelay() {
+    return (
+      window.APP_CONFIG.replyDelayMin +
+      Math.random() *
+        (window.APP_CONFIG.replyDelayMax - window.APP_CONFIG.replyDelayMin)
+    );
+  }
+
+  function pickSentences() {
+    const chance = loadMultiChance();
+    const roll = Math.random() * 100;
+
+    if (chance <= 0 || roll >= chance) {
+      return [CardDeck.draw(cardCategory)];
+    }
+
+    const count = Math.random() < 0.65 ? 2 : 3;
+    const list = [];
+
+    for (let i = 0; i < count; i += 1) {
+      list.push(CardDeck.draw(cardCategory));
+    }
+
+    return list;
+  }
+
   function scheduleReply() {
     if (replyTimer) clearTimeout(replyTimer);
 
@@ -177,20 +218,34 @@ const Chat = (() => {
     updateStatus();
     if (els.send) els.send.disabled = true;
 
-    const delay =
-      window.APP_CONFIG.replyDelayMin +
-      Math.random() *
-        (window.APP_CONFIG.replyDelayMax - window.APP_CONFIG.replyDelayMin);
-
     replyTimer = window.setTimeout(() => {
-      const reply = CardDeck.draw(cardCategory);
-      append("ta", reply);
+      const sentences = pickSentences();
+      let index = 0;
 
-      replying = false;
-      replyTimer = null;
-      updateStatus();
-      if (els.send) els.send.disabled = false;
-    }, delay);
+      function pushNext() {
+        if (index >= sentences.length) {
+          replying = false;
+          replyTimer = null;
+          updateStatus();
+          if (els.send) els.send.disabled = false;
+          return;
+        }
+
+        append("ta", sentences[index]);
+        index += 1;
+
+        if (index < sentences.length) {
+          replyTimer = window.setTimeout(pushNext, 400 + Math.random() * 500);
+        } else {
+          replying = false;
+          replyTimer = null;
+          updateStatus();
+          if (els.send) els.send.disabled = false;
+        }
+      }
+
+      pushNext();
+    }, baseDelay());
   }
 
   function send() {
