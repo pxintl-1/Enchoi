@@ -222,6 +222,30 @@
 
         <span id="proactive-feedback" class="feedback" aria-live="polite"></span>
 
+        <h2 class="section-title">TA 多句回复</h2>
+        <p class="hint">
+          每次 TA 回复时，按设定概率决定发 1 句还是连续发 2–3 句。
+          设为 0 表示永远只发 1 句；设为 100 表示每次都会发多句。
+        </p>
+
+        <label class="field-label" for="multi-reply-chance">多句概率（0–100）</label>
+        <div class="proactive-interval-row">
+          <input
+            id="multi-reply-chance"
+            type="number"
+            min="0"
+            max="100"
+            step="1"
+            value="30"
+            inputmode="numeric"
+            class="proactive-interval-input"
+          >
+          <span class="proactive-interval-unit">%</span>
+        </div>
+        <p class="hint" id="multi-reply-chance-value">每次回复有 30% 概率发 2–3 句。</p>
+
+        <span id="multi-reply-feedback" class="feedback" aria-live="polite"></span>
+
         <h2 class="section-title">气泡样式</h2>
         <p class="hint">选择后立即生效，并保存在当前浏览器。</p>
         <div class="actions">
