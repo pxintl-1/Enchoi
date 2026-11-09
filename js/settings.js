@@ -8,6 +8,7 @@ const Settings = (() => {
   let bubbleFeedbackTimer = null;
   let customCssFeedbackTimer = null;
   let proactiveFeedbackTimer = null;
+  let multiReplyFeedbackTimer = null;
   let pickingRole = null;
 
   let activeCategory = CardDeck.ALL_CATEGORY;
@@ -86,6 +87,10 @@ const Settings = (() => {
     els.proactiveInterval = document.getElementById("proactive-interval");
     els.proactiveIntervalValue = document.getElementById("proactive-interval-value");
     els.proactiveFeedback = document.getElementById("proactive-feedback");
+
+    els.multiReplyChance = document.getElementById("multi-reply-chance");
+    els.multiReplyChanceValue = document.getElementById("multi-reply-chance-value");
+    els.multiReplyFeedback = document.getElementById("multi-reply-feedback");
 
     els.bubbleStyleSelect = document.getElementById("bubble-style-select");
     els.bubbleFeedback = document.getElementById("bubble-feedback");
@@ -294,6 +299,11 @@ const Settings = (() => {
       els.proactiveInterval.addEventListener("change", onProactiveIntervalChange);
     }
 
+    if (els.multiReplyChance) {
+      els.multiReplyChance.addEventListener("input", onMultiReplyInput);
+      els.multiReplyChance.addEventListener("change", onMultiReplyChange);
+    }
+
     if (els.composerForceSend) {
       els.composerForceSend.addEventListener("click", sendProactiveNow);
     }
@@ -374,6 +384,7 @@ const Settings = (() => {
 
     updateThemeButton();
     renderProactive();
+    renderMultiReply();
     renderContacts();
     updateHomeClock();
   }
@@ -567,6 +578,17 @@ const Settings = (() => {
     }, 2200);
   }
 
+  function showMultiReplyFeedback(message, isError) {
+    if (!els.multiReplyFeedback) return;
+    els.multiReplyFeedback.textContent = message;
+    els.multiReplyFeedback.classList.toggle("is-error", Boolean(isError));
+    if (multiReplyFeedbackTimer) clearTimeout(multiReplyFeedbackTimer);
+    multiReplyFeedbackTimer = window.setTimeout(() => {
+      els.multiReplyFeedback.textContent = "";
+      els.multiReplyFeedback.classList.remove("is-error");
+    }, 2200);
+  }
+
   function renderProactive() {
     const cfg = Proactive.get();
 
@@ -629,6 +651,64 @@ const Settings = (() => {
     showProactiveFeedback(
       `已强制发送一条：「${text.slice(0, 18)}${text.length > 18 ? "…" : ""}」`
     );
+  }
+
+  function readMultiChance() {
+    try {
+      const raw = localStorage.getItem("private_chat_multi_reply_v1");
+      if (raw === null) return 30;
+      const num = Number(raw);
+      if (!Number.isFinite(num)) return 30;
+      return Math.max(0, Math.min(100, Math.round(num)));
+    } catch (error) {
+      return 30;
+    }
+  }
+
+  function renderMultiReply() {
+    const value = readMultiChance();
+
+    if (els.multiReplyChance) {
+      els.multiReplyChance.value = String(value);
+    }
+
+    if (els.multiReplyChanceValue) {
+      els.multiReplyChanceValue.textContent =
+        value === 0
+          ? "设为 0：TA 永远只发 1 句。"
+          : `每次回复有 ${value}% 概率发 2–3 句。`;
+    }
+  }
+
+  function onMultiReplyInput() {
+    const raw = Number(els.multiReplyChance.value);
+    const value = Number.isFinite(raw)
+      ? Math.max(0, Math.min(100, Math.round(raw)))
+      : 30;
+
+    if (els.multiReplyChanceValue) {
+      els.multiReplyChanceValue.textContent =
+        value === 0
+          ? "设为 0：TA 永远只发 1 句。"
+          : `每次回复有 ${value}% 概率发 2–3 句。`;
+    }
+  }
+
+  function onMultiReplyChange() {
+    const raw = Number(els.multiReplyChance.value);
+    const value = Number.isFinite(raw)
+      ? Math.max(0, Math.min(100, Math.round(raw)))
+      : 30;
+
+    try {
+      localStorage.setItem("private_chat_multi_reply_v1", String(value));
+    } catch (error) {
+      showMultiReplyFeedback("保存失败，可能是存储空间不足。", true);
+      return;
+    }
+
+    renderMultiReply();
+    showMultiReplyFeedback(`多句概率已改为 ${value}%。`);
   }
 
   function openBatchSendSheet() {
@@ -747,6 +827,7 @@ const Settings = (() => {
     renderAvatarSettings();
     fillProfileForm();
     renderProactive();
+    renderMultiReply();
     if (els.customCssInput) {
       els.customCssInput.value = CustomCssStore.get();
     }
