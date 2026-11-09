@@ -8,6 +8,8 @@ const Chat = (() => {
 
   const MULTI_KEY = "private_chat_multi_reply_v1";
   const MULTI_DEFAULT = 30;
+  const GAP_KEY = "private_chat_multi_reply_gap_v1";
+  const GAP_DEFAULT = 0.5;
 
   function loadMultiChance() {
     try {
@@ -18,6 +20,18 @@ const Chat = (() => {
       return Math.max(0, Math.min(100, Math.round(num)));
     } catch (error) {
       return MULTI_DEFAULT;
+    }
+  }
+
+  function loadMultiGap() {
+    try {
+      const raw = localStorage.getItem(GAP_KEY);
+      if (raw === null) return GAP_DEFAULT;
+      const num = Number(raw);
+      if (!Number.isFinite(num)) return GAP_DEFAULT;
+      return Math.max(0.2, Math.min(5, num));
+    } catch (error) {
+      return GAP_DEFAULT;
     }
   }
 
@@ -211,6 +225,12 @@ const Chat = (() => {
     return list;
   }
 
+  function sentenceGapMs() {
+    const base = loadMultiGap() * 1000;
+    const jitter = Math.random() * 500;
+    return base + jitter;
+  }
+
   function scheduleReply() {
     if (replyTimer) clearTimeout(replyTimer);
 
@@ -235,7 +255,7 @@ const Chat = (() => {
         index += 1;
 
         if (index < sentences.length) {
-          replyTimer = window.setTimeout(pushNext, 400 + Math.random() * 500);
+          replyTimer = window.setTimeout(pushNext, sentenceGapMs());
         } else {
           replying = false;
           replyTimer = null;
