@@ -262,6 +262,24 @@
         </div>
         <p class="hint" id="multi-reply-chance-value">每次回复有 30% 概率发 2–3 句。</p>
 
+        <label class="field-label" for="multi-reply-gap">多句间隔（秒）</label>
+        <div class="proactive-interval-row">
+          <input
+            id="multi-reply-gap"
+            type="number"
+            min="0.2"
+            max="5"
+            step="0.1"
+            value="0.5"
+            inputmode="decimal"
+            class="proactive-interval-input"
+          >
+          <span class="proactive-interval-unit">秒</span>
+        </div>
+        <p class="hint" id="multi-reply-gap-value">
+          多句模式下，每句之间至少停 0.5 秒；会在基础上再加 0–0.5 秒随机延迟。
+        </p>
+
         <span id="multi-reply-feedback" class="feedback" aria-live="polite"></span>
 
         <h2 class="section-title">气泡样式</h2>
