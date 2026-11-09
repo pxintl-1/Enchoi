@@ -220,6 +220,24 @@
           设为多少，就保证在这个分钟数内至少收到一条主动消息；设为 0 时每次检查都会尝试发一条。
         </p>
 
+        <label class="field-label" for="proactive-chance">提前发概率（0–100）</label>
+        <div class="proactive-interval-row">
+          <input
+            id="proactive-chance"
+            type="number"
+            min="0"
+            max="100"
+            step="1"
+            value="50"
+            inputmode="numeric"
+            class="proactive-interval-input"
+          >
+          <span class="proactive-interval-unit">%</span>
+        </div>
+        <p class="hint" id="proactive-chance-value">
+          每次检查有 50% 概率提前发；到达最长间隔时仍会强制发一条。
+        </p>
+
         <span id="proactive-feedback" class="feedback" aria-live="polite"></span>
 
         <h2 class="section-title">TA 多句回复</h2>
