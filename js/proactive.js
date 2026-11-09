@@ -1,11 +1,18 @@
 const Proactive = (() => {
-  const KEY = "private_chat_proactive_v3";
+  const KEY = "private_chat_proactive_v4";
+  const LEGACY_KEYS = [
+    "private_chat_proactive_v3",
+    "private_chat_proactive_v2",
+    "private_chat_proactive_v1"
+  ];
   const CHECK_INTERVAL_MS = 30 * 1000;
   const DEFAULT_INTERVAL = 10;
+  const DEFAULT_CHANCE = 50;
 
   const DEFAULTS = {
     enabled: false,
     intervalMin: DEFAULT_INTERVAL,
+    chance: DEFAULT_CHANCE,
     lastSentAt: 0
   };
 
@@ -15,27 +22,40 @@ const Proactive = (() => {
     return Math.max(0, Math.floor(num));
   }
 
+  function clampChance(value) {
+    const num = Number(value);
+    if (!Number.isFinite(num)) return DEFAULT_CHANCE;
+    return Math.max(0, Math.min(100, Math.round(num)));
+  }
+
+  function normalize(parsed) {
+    if (!parsed || typeof parsed !== "object") return { ...DEFAULTS };
+    return {
+      enabled: parsed.enabled === true,
+      intervalMin: clampInterval(parsed.intervalMin),
+      chance:
+        parsed.chance === undefined
+          ? DEFAULT_CHANCE
+          : clampChance(parsed.chance),
+      lastSentAt: Number(parsed.lastSentAt) || 0
+    };
+  }
+
   function load() {
     try {
       const raw = localStorage.getItem(KEY);
-      if (!raw) {
-        const legacy = localStorage.getItem("private_chat_proactive_v2");
-        if (legacy) {
-          const parsedLegacy = JSON.parse(legacy);
-          return {
-            enabled: parsedLegacy.enabled === true,
-            intervalMin: clampInterval(parsedLegacy.intervalMin),
-            lastSentAt: Number(parsedLegacy.lastSentAt) || 0
-          };
+      if (raw) return normalize(JSON.parse(raw));
+
+      for (let i = 0; i < LEGACY_KEYS.length; i += 1) {
+        const legacyRaw = localStorage.getItem(LEGACY_KEYS[i]);
+        if (legacyRaw) {
+          const migrated = normalize(JSON.parse(legacyRaw));
+          localStorage.setItem(KEY, JSON.stringify(migrated));
+          return migrated;
         }
-        return { ...DEFAULTS };
       }
-      const parsed = JSON.parse(raw);
-      return {
-        enabled: parsed.enabled === true,
-        intervalMin: clampInterval(parsed.intervalMin),
-        lastSentAt: Number(parsed.lastSentAt) || 0
-      };
+
+      return { ...DEFAULTS };
     } catch (error) {
       return { ...DEFAULTS };
     }
@@ -65,6 +85,10 @@ const Proactive = (() => {
 
     if (patch.intervalMin !== undefined) {
       config.intervalMin = clampInterval(patch.intervalMin);
+    }
+
+    if (patch.chance !== undefined) {
+      config.chance = clampChance(patch.chance);
     }
 
     if (patch.lastSentAt !== undefined) {
@@ -111,7 +135,9 @@ const Proactive = (() => {
     const elapsed = minutesSinceLast();
 
     if (interval === 0) {
-      trySend();
+      if (config.chance >= 100 || Math.random() * 100 < config.chance) {
+        trySend();
+      }
       return;
     }
 
@@ -120,10 +146,9 @@ const Proactive = (() => {
       return;
     }
 
-    const progress = elapsed / interval;
-    const chance = Math.max(0.08, progress * 0.5);
+    if (config.chance <= 0) return;
 
-    if (Math.random() < chance) {
+    if (Math.random() * 100 < config.chance) {
       trySend();
     }
   }
